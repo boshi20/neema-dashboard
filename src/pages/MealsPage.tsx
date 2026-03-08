@@ -27,7 +27,10 @@ const MealsPage = () => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const { toast } = useToast();
-  const [meals, setMeals] = useState<Meal[]>(mockMeals);
+  const [meals, setMeals] = useState<Meal[]>(() => {
+    const saved = localStorage.getItem("saveplate_meals");
+    return saved ? JSON.parse(saved) : mockMeals;
+  });
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
