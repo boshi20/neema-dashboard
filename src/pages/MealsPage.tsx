@@ -179,7 +179,7 @@ const MealsPage = () => {
                     {meal.pickupFrom} - {meal.pickupTo}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {t("meals.availableQuantity")}: {meal.availableQuantity}/{meal.quantity}
+                    {t("meals.availableQuantity")}: {meal.availableQuantity}
                   </div>
                   <div className="flex items-center justify-between border-t border-border pt-3">
                     <div className="flex items-center gap-2">
