@@ -152,10 +152,10 @@ const MealsPage = () => {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((meal) => (
-              <Card key={meal.id} className="overflow-hidden">
-                <div className="h-32 bg-accent flex items-center justify-center overflow-hidden">
+              <Card key={meal.id} className="overflow-hidden animate-scale-in group" style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}>
+                <div className="h-36 bg-accent/50 flex items-center justify-center overflow-hidden">
                   {meal.image ? (
-                    <img src={meal.image} alt={meal.name} className="h-full w-full object-cover" />
+                    <img src={meal.image} alt={meal.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   ) : (
                     <span className="text-4xl">🍽️</span>
                   )}
