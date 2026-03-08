@@ -50,6 +50,12 @@ const MealsPage = () => {
     "all", "appetizers", "mainCourse", "desserts", "beverages", "bakery", "salads",
   ];
 
+  const timeOptions = Array.from({ length: 48 }, (_, i) => {
+    const h = String(Math.floor(i / 2)).padStart(2, "0");
+    const m = i % 2 === 0 ? "00" : "30";
+    return `${h}:${m}`;
+  });
+
   const filtered = meals.filter((m) => {
     const matchSearch = m.name.toLowerCase().includes(search.toLowerCase());
     const matchCategory = categoryFilter === "all" || m.category === categoryFilter;
