@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import OmrSymbol from "@/components/OmrSymbol";
 import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
