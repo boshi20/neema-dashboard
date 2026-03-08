@@ -115,5 +115,6 @@ export const en = {
     latitude: "Latitude",
     longitude: "Longitude",
     mapHint: "Click on the map to set your restaurant location",
+    saved: "Settings saved successfully",
   },
 };
