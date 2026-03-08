@@ -163,8 +163,8 @@ const MealsPage = () => {
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-foreground">{meal.name}</h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{meal.description}</p>
+                      <h3 className="font-semibold text-foreground">{isAr && meal.nameAr ? meal.nameAr : meal.name}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{isAr && meal.descriptionAr ? meal.descriptionAr : meal.description}</p>
                     </div>
                     <Badge variant={meal.available ? "default" : "secondary"}>
                       {meal.available ? t("common.available") : t("common.unavailable")}
