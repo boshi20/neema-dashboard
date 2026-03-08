@@ -27,6 +27,14 @@ export const en = {
     loading: "Loading...",
     confirm: "Confirm",
     back: "Back",
+    uploadImage: "Upload Image",
+  },
+  login: {
+    subtitle: "Sign in to your restaurant dashboard",
+    email: "Email",
+    password: "Password",
+    signIn: "Sign In",
+    success: "Welcome back!",
   },
   dashboard: {
     title: "Dashboard",
@@ -58,6 +66,7 @@ export const en = {
     availability: "Availability",
     toggleAvailability: "Toggle Availability",
     mealImage: "Meal Image",
+    mealPhoto: "Meal Photo",
     deleteMeal: "Delete Meal",
     confirmDelete: "Are you sure you want to delete this meal?",
     categories: {
@@ -95,11 +104,16 @@ export const en = {
   settings: {
     title: "Settings",
     restaurantName: "Restaurant Name",
+    restaurantLogo: "Restaurant Logo",
     address: "Address",
     phone: "Phone",
     email: "Email",
     openingHours: "Opening Hours",
     language: "Language",
     notifications: "Notifications",
+    location: "Restaurant Location",
+    latitude: "Latitude",
+    longitude: "Longitude",
+    mapHint: "Click on the map to set your restaurant location",
   },
 };

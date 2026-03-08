@@ -27,6 +27,14 @@ export const ar = {
     loading: "جاري التحميل...",
     confirm: "تأكيد",
     back: "رجوع",
+    uploadImage: "رفع صورة",
+  },
+  login: {
+    subtitle: "سجّل الدخول إلى لوحة تحكم مطعمك",
+    email: "البريد الإلكتروني",
+    password: "كلمة المرور",
+    signIn: "تسجيل الدخول",
+    success: "مرحباً بعودتك!",
   },
   dashboard: {
     title: "لوحة التحكم",
@@ -58,6 +66,7 @@ export const ar = {
     availability: "التوفر",
     toggleAvailability: "تبديل التوفر",
     mealImage: "صورة الوجبة",
+    mealPhoto: "صورة الوجبة",
     deleteMeal: "حذف الوجبة",
     confirmDelete: "هل أنت متأكد من حذف هذه الوجبة؟",
     categories: {
@@ -95,11 +104,16 @@ export const ar = {
   settings: {
     title: "الإعدادات",
     restaurantName: "اسم المطعم",
+    restaurantLogo: "شعار المطعم",
     address: "العنوان",
     phone: "الهاتف",
     email: "البريد الإلكتروني",
     openingHours: "ساعات العمل",
     language: "اللغة",
     notifications: "الإشعارات",
+    location: "موقع المطعم",
+    latitude: "خط العرض",
+    longitude: "خط الطول",
+    mapHint: "انقر على الخريطة لتحديد موقع مطعمك",
   },
 };
