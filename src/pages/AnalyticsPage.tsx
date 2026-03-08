@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf, DollarSign, Star, Users } from "lucide-react";
+import OmrSymbol from "@/components/OmrSymbol";
 
 const AnalyticsPage = () => {
   const { t } = useTranslation();

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import OmrSymbol from "@/components/OmrSymbol";
 import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
