@@ -19,12 +19,14 @@ const AdminDashboard = () => {
   const activeRestaurants = mockRestaurants.filter((r) => r.status === "active").length;
   const totalOrders = mockPlatformOrders.length;
   const totalRevenue = mockRestaurants.reduce((s, r) => s + r.revenue, 0);
+  const totalUsers = 2314; // Total platform users
+  const newUsersToday = 18; // New users registered today
 
   const stats = [
+    { title: t("admin.totalUsers"), value: totalUsers.toLocaleString(), icon: Users, bgClass: "bg-chart-4/10", iconClass: "text-chart-4" },
+    { title: t("admin.platformRevenue"), value: totalRevenue.toLocaleString(), icon: TrendingUp, bgClass: "bg-chart-1/10", iconClass: "text-chart-1", showOmr: true },
+    { title: t("admin.newUsersToday"), value: newUsersToday, icon: Users, bgClass: "bg-chart-2/10", iconClass: "text-chart-2" },
     { title: t("admin.totalRestaurants"), value: totalRestaurants, icon: Store, bgClass: "bg-primary/10", iconClass: "text-primary" },
-    { title: t("admin.activeRestaurants"), value: activeRestaurants, icon: TrendingUp, bgClass: "bg-chart-1/10", iconClass: "text-chart-1" },
-    { title: t("admin.totalOrders"), value: totalOrders, icon: ShoppingBag, bgClass: "bg-chart-2/10", iconClass: "text-chart-2" },
-    { title: t("admin.totalUsers"), value: "8", icon: Users, bgClass: "bg-chart-4/10", iconClass: "text-chart-4" },
   ];
 
   const statusColors: Record<string, string> = {
