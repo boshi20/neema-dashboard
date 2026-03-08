@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import ImageUpload from "@/components/ImageUpload";
 import LocationPicker from "@/components/LocationPicker";
 
@@ -17,8 +18,14 @@ const SettingsPage = () => {
   const { t } = useTranslation();
   const { currentLanguage, changeLanguage } = useLanguage();
   const { user, updateUser } = useAuth();
+  const { toast } = useToast();
+
   const [logo, setLogo] = useState(user?.logo || "");
-  const [lat, setLat] = useState(24.7136); // Riyadh default
+  const [restaurantName, setRestaurantName] = useState(user?.restaurantName || "SavePlate Restaurant");
+  const [address, setAddress] = useState("123 Main Street, Riyadh");
+  const [phone, setPhone] = useState("+966 50 123 4567");
+  const [email, setEmail] = useState(user?.email || "info@saveplate.com");
+  const [lat, setLat] = useState(24.7136);
   const [lng, setLng] = useState(46.6753);
 
   const handleLogoChange = (url: string) => {
@@ -26,71 +33,56 @@ const SettingsPage = () => {
     updateUser({ logo: url });
   };
 
+  const handleSave = () => {
+    updateUser({ restaurantName, email });
+    toast({ title: t("settings.saved") });
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-foreground">{t("settings.title")}</h1>
 
-        {/* Logo */}
         <Card>
-          <CardHeader>
-            <CardTitle>{t("settings.restaurantLogo")}</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("settings.restaurantLogo")}</CardTitle></CardHeader>
           <CardContent>
-            <ImageUpload
-              value={logo}
-              onChange={handleLogoChange}
-              aspectRatio="square"
-            />
+            <ImageUpload value={logo} onChange={handleLogoChange} aspectRatio="square" />
           </CardContent>
         </Card>
 
-        {/* Restaurant Info */}
         <Card>
-          <CardHeader>
-            <CardTitle>{t("settings.title")}</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("settings.title")}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-2">
               <Label>{t("settings.restaurantName")}</Label>
-              <Input defaultValue={user?.restaurantName || "SavePlate Restaurant"} />
+              <Input value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} />
             </div>
             <div className="grid gap-2">
               <Label>{t("settings.address")}</Label>
-              <Input defaultValue="123 Main Street, Riyadh" />
+              <Input value={address} onChange={(e) => setAddress(e.target.value)} />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label>{t("settings.phone")}</Label>
-                <Input defaultValue="+966 50 123 4567" />
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
               <div className="grid gap-2">
                 <Label>{t("settings.email")}</Label>
-                <Input defaultValue={user?.email || "info@saveplate.com"} />
+                <Input value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Location */}
         <Card>
-          <CardHeader>
-            <CardTitle>{t("settings.location")}</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("settings.location")}</CardTitle></CardHeader>
           <CardContent>
-            <LocationPicker
-              lat={lat}
-              lng={lng}
-              onChange={(newLat, newLng) => { setLat(newLat); setLng(newLng); }}
-            />
+            <LocationPicker lat={lat} lng={lng} onChange={(newLat, newLng) => { setLat(newLat); setLng(newLng); }} />
           </CardContent>
         </Card>
 
-        {/* Language */}
         <Card>
-          <CardHeader>
-            <CardTitle>{t("settings.language")}</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("settings.language")}</CardTitle></CardHeader>
           <CardContent>
             <Select value={currentLanguage} onValueChange={changeLanguage}>
               <SelectTrigger className="w-full sm:w-64"><SelectValue /></SelectTrigger>
@@ -103,7 +95,7 @@ const SettingsPage = () => {
         </Card>
 
         <div className="flex justify-end">
-          <Button>{t("common.save")}</Button>
+          <Button onClick={handleSave}>{t("common.save")}</Button>
         </div>
       </div>
     </DashboardLayout>
