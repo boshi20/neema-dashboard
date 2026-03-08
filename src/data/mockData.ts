@@ -4,7 +4,9 @@ export const mockMeals: Meal[] = [
   {
     id: "1",
     name: "Chicken Shawarma Plate",
+    nameAr: "طبق شاورما دجاج",
     description: "Grilled chicken shawarma with rice, salad, and garlic sauce",
+    descriptionAr: "شاورما دجاج مشوية مع أرز وسلطة وصوص ثوم",
     originalPrice: 25,
     discountedPrice: 12,
     quantity: 10,
@@ -19,7 +21,9 @@ export const mockMeals: Meal[] = [
   {
     id: "2",
     name: "Falafel Wrap",
+    nameAr: "لفة فلافل",
     description: "Fresh falafel with hummus, pickles, and tahini in a warm pita",
+    descriptionAr: "فلافل طازجة مع حمص ومخللات وطحينة في خبز دافئ",
     originalPrice: 15,
     discountedPrice: 7,
     quantity: 20,
@@ -34,7 +38,9 @@ export const mockMeals: Meal[] = [
   {
     id: "3",
     name: "Kunafa",
+    nameAr: "كنافة",
     description: "Traditional cheese kunafa with sugar syrup",
+    descriptionAr: "كنافة بالجبن التقليدية مع شراب السكر",
     originalPrice: 18,
     discountedPrice: 9,
     quantity: 8,
@@ -49,7 +55,9 @@ export const mockMeals: Meal[] = [
   {
     id: "4",
     name: "Hummus & Pita",
+    nameAr: "حمص وخبز",
     description: "Creamy hummus served with warm pita bread and olive oil",
+    descriptionAr: "حمص كريمي مع خبز دافئ وزيت زيتون",
     originalPrice: 10,
     discountedPrice: 5,
     quantity: 15,
@@ -64,7 +72,9 @@ export const mockMeals: Meal[] = [
   {
     id: "5",
     name: "Fresh Lemonade with Mint",
+    nameAr: "ليموناضة طازجة بالنعناع",
     description: "Refreshing lemonade with fresh mint leaves",
+    descriptionAr: "ليموناضة منعشة مع أوراق النعناع الطازجة",
     originalPrice: 8,
     discountedPrice: 4,
     quantity: 25,

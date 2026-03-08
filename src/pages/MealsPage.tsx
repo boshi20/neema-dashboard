@@ -25,7 +25,8 @@ import ImageUpload from "@/components/ImageUpload";
 
 const MealsPage = () => {
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
+  const { isRTL, currentLanguage } = useLanguage();
+  const isAr = currentLanguage === "ar";
   const { toast } = useToast();
   const [meals, setMeals] = useState<Meal[]>(() => {
     const saved = localStorage.getItem("saveplate_meals");
@@ -42,7 +43,7 @@ const MealsPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [form, setForm] = useState({
-    name: "", description: "", originalPrice: "", discountedPrice: "",
+    name: "", nameAr: "", description: "", descriptionAr: "", originalPrice: "", discountedPrice: "",
     quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "", image: "",
   });
 
@@ -65,7 +66,7 @@ const MealsPage = () => {
   const openAdd = () => {
     setEditingMeal(null);
     setForm({
-      name: "", description: "", originalPrice: "", discountedPrice: "",
+      name: "", nameAr: "", description: "", descriptionAr: "", originalPrice: "", discountedPrice: "",
       quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "", image: "",
     });
     setDialogOpen(true);
@@ -74,7 +75,7 @@ const MealsPage = () => {
   const openEdit = (meal: Meal) => {
     setEditingMeal(meal);
     setForm({
-      name: meal.name, description: meal.description,
+      name: meal.name, nameAr: meal.nameAr, description: meal.description, descriptionAr: meal.descriptionAr,
       originalPrice: String(meal.originalPrice), discountedPrice: String(meal.discountedPrice),
       quantity: String(meal.quantity), category: meal.category,
       pickupFrom: meal.pickupFrom, pickupTo: meal.pickupTo, image: meal.image,
@@ -88,7 +89,7 @@ const MealsPage = () => {
       setMeals((prev) =>
         prev.map((m) =>
           m.id === editingMeal.id
-            ? { ...m, name: form.name, description: form.description,
+            ? { ...m, name: form.name, nameAr: form.nameAr, description: form.description, descriptionAr: form.descriptionAr,
                 originalPrice: Number(form.originalPrice), discountedPrice: Number(form.discountedPrice),
                 quantity: Number(form.quantity), category: form.category,
                 pickupFrom: form.pickupFrom, pickupTo: form.pickupTo, image: form.image }
@@ -98,7 +99,8 @@ const MealsPage = () => {
       toast({ title: t("meals.editMeal"), description: form.name });
     } else {
       const newMeal: Meal = {
-        id: String(Date.now()), name: form.name, description: form.description,
+        id: String(Date.now()), name: form.name, nameAr: form.nameAr,
+        description: form.description, descriptionAr: form.descriptionAr,
         originalPrice: Number(form.originalPrice), discountedPrice: Number(form.discountedPrice),
         quantity: Number(form.quantity), availableQuantity: Number(form.quantity),
         category: form.category, image: form.image, available: true,
@@ -161,8 +163,8 @@ const MealsPage = () => {
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-foreground">{meal.name}</h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{meal.description}</p>
+                      <h3 className="font-semibold text-foreground">{isAr && meal.nameAr ? meal.nameAr : meal.name}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{isAr && meal.descriptionAr ? meal.descriptionAr : meal.description}</p>
                     </div>
                     <Badge variant={meal.available ? "default" : "secondary"}>
                       {meal.available ? t("common.available") : t("common.unavailable")}
@@ -215,8 +217,16 @@ const MealsPage = () => {
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div className="grid gap-2">
+                <Label>{t("meals.mealNameAr")}</Label>
+                <Input value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} dir="rtl" />
+              </div>
+              <div className="grid gap-2">
                 <Label>{t("meals.description")}</Label>
                 <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>{t("meals.descriptionAr")}</Label>
+                <Textarea value={form.descriptionAr} onChange={(e) => setForm({ ...form, descriptionAr: e.target.value })} dir="rtl" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
