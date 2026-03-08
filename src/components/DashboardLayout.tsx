@@ -54,10 +54,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       >
         {/* Logo */}
         <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <UtensilsCrossed className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold text-foreground">SavePlate</span>
+          {user?.logo ? (
+            <img src={user.logo} alt="Logo" className="h-8 w-8 rounded-lg object-cover" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <UtensilsCrossed className="h-4 w-4 text-primary-foreground" />
+            </div>
+          )}
+          <span className="text-lg font-bold text-foreground">{user?.restaurantName || "SavePlate"}</span>
           <Button
             variant="ghost"
             size="icon"
