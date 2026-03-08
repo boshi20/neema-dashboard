@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -23,6 +25,8 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -50,10 +54,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       >
         {/* Logo */}
         <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <UtensilsCrossed className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold text-foreground">SavePlate</span>
+          {user?.logo ? (
+            <img src={user.logo} alt="Logo" className="h-8 w-8 rounded-lg object-cover" />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+              <UtensilsCrossed className="h-4 w-4 text-primary-foreground" />
+            </div>
+          )}
+          <span className="text-lg font-bold text-foreground">{user?.restaurantName || "SavePlate"}</span>
           <Button
             variant="ghost"
             size="icon"
@@ -86,7 +94,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
         {/* Bottom */}
         <div className="border-t border-border p-4">
-          <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
+          <button onClick={() => { logout(); navigate("/login"); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
             <LogOut className="h-5 w-5" />
             {t("common.logout")}
           </button>

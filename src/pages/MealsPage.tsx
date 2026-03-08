@@ -7,18 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +20,7 @@ import { Meal } from "@/types/meal";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
+import ImageUpload from "@/components/ImageUpload";
 
 const MealsPage = () => {
   const { t } = useTranslation();
@@ -39,14 +32,8 @@ const MealsPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [form, setForm] = useState({
-    name: "",
-    description: "",
-    originalPrice: "",
-    discountedPrice: "",
-    quantity: "",
-    category: "mainCourse",
-    pickupFrom: "",
-    pickupTo: "",
+    name: "", description: "", originalPrice: "", discountedPrice: "",
+    quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "", image: "",
   });
 
   const categories = [
@@ -63,7 +50,7 @@ const MealsPage = () => {
     setEditingMeal(null);
     setForm({
       name: "", description: "", originalPrice: "", discountedPrice: "",
-      quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "",
+      quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "", image: "",
     });
     setDialogOpen(true);
   };
@@ -71,14 +58,10 @@ const MealsPage = () => {
   const openEdit = (meal: Meal) => {
     setEditingMeal(meal);
     setForm({
-      name: meal.name,
-      description: meal.description,
-      originalPrice: String(meal.originalPrice),
-      discountedPrice: String(meal.discountedPrice),
-      quantity: String(meal.quantity),
-      category: meal.category,
-      pickupFrom: meal.pickupFrom,
-      pickupTo: meal.pickupTo,
+      name: meal.name, description: meal.description,
+      originalPrice: String(meal.originalPrice), discountedPrice: String(meal.discountedPrice),
+      quantity: String(meal.quantity), category: meal.category,
+      pickupFrom: meal.pickupFrom, pickupTo: meal.pickupTo, image: meal.image,
     });
     setDialogOpen(true);
   };
@@ -89,35 +72,21 @@ const MealsPage = () => {
       setMeals((prev) =>
         prev.map((m) =>
           m.id === editingMeal.id
-            ? {
-                ...m,
-                name: form.name,
-                description: form.description,
-                originalPrice: Number(form.originalPrice),
-                discountedPrice: Number(form.discountedPrice),
-                quantity: Number(form.quantity),
-                category: form.category,
-                pickupFrom: form.pickupFrom,
-                pickupTo: form.pickupTo,
-              }
+            ? { ...m, name: form.name, description: form.description,
+                originalPrice: Number(form.originalPrice), discountedPrice: Number(form.discountedPrice),
+                quantity: Number(form.quantity), category: form.category,
+                pickupFrom: form.pickupFrom, pickupTo: form.pickupTo, image: form.image }
             : m
         )
       );
       toast({ title: t("meals.editMeal"), description: form.name });
     } else {
       const newMeal: Meal = {
-        id: String(Date.now()),
-        name: form.name,
-        description: form.description,
-        originalPrice: Number(form.originalPrice),
-        discountedPrice: Number(form.discountedPrice),
-        quantity: Number(form.quantity),
-        availableQuantity: Number(form.quantity),
-        category: form.category,
-        image: "",
-        available: true,
-        pickupFrom: form.pickupFrom,
-        pickupTo: form.pickupTo,
+        id: String(Date.now()), name: form.name, description: form.description,
+        originalPrice: Number(form.originalPrice), discountedPrice: Number(form.discountedPrice),
+        quantity: Number(form.quantity), availableQuantity: Number(form.quantity),
+        category: form.category, image: form.image, available: true,
+        pickupFrom: form.pickupFrom, pickupTo: form.pickupTo,
         createdAt: new Date().toISOString().split("T")[0],
       };
       setMeals((prev) => [newMeal, ...prev]);
@@ -126,11 +95,8 @@ const MealsPage = () => {
     setDialogOpen(false);
   };
 
-  const toggleAvailability = (id: string) => {
-    setMeals((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, available: !m.available } : m))
-    );
-  };
+  const toggleAvailability = (id: string) =>
+    setMeals((prev) => prev.map((m) => (m.id === id ? { ...m, available: !m.available } : m)));
 
   const deleteMeal = (id: string) => {
     setMeals((prev) => prev.filter((m) => m.id !== id));
@@ -140,7 +106,6 @@ const MealsPage = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-bold text-foreground">{t("meals.title")}</h1>
           <Button onClick={openAdd} className="gap-2">
@@ -149,83 +114,59 @@ const MealsPage = () => {
           </Button>
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
             <Search className={cn("absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground", isRTL ? "right-3" : "left-3")} />
-            <Input
-              placeholder={t("common.search")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={cn(isRTL ? "pr-10" : "pl-10")}
-            />
+            <Input placeholder={t("common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className={cn(isRTL ? "pr-10" : "pl-10")} />
           </div>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {t(`meals.categories.${cat}`)}
-                </SelectItem>
+                <SelectItem key={cat} value={cat}>{t(`meals.categories.${cat}`)}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {/* Meals Grid */}
         {filtered.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground">
-            {t("meals.noMeals")}
-          </div>
+          <div className="py-12 text-center text-muted-foreground">{t("meals.noMeals")}</div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((meal) => (
               <Card key={meal.id} className="overflow-hidden">
-                <div className="h-32 bg-accent flex items-center justify-center">
-                  <span className="text-4xl">🍽️</span>
+                <div className="h-32 bg-accent flex items-center justify-center overflow-hidden">
+                  {meal.image ? (
+                    <img src={meal.image} alt={meal.name} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-4xl">🍽️</span>
+                  )}
                 </div>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="font-semibold text-foreground">{meal.name}</h3>
-                      <p className="text-xs text-muted-foreground line-clamp-2">
-                        {meal.description}
-                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{meal.description}</p>
                     </div>
                     <Badge variant={meal.available ? "default" : "secondary"}>
                       {meal.available ? t("common.available") : t("common.unavailable")}
                     </Badge>
                   </div>
-
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-primary">
-                      ${meal.discountedPrice}
-                    </span>
-                    <span className="text-sm text-muted-foreground line-through">
-                      ${meal.originalPrice}
-                    </span>
+                    <span className="text-lg font-bold text-primary">${meal.discountedPrice}</span>
+                    <span className="text-sm text-muted-foreground line-through">${meal.originalPrice}</span>
                   </div>
-
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     {meal.pickupFrom} - {meal.pickupTo}
                   </div>
-
                   <div className="text-xs text-muted-foreground">
                     {t("meals.availableQuantity")}: {meal.availableQuantity}/{meal.quantity}
                   </div>
-
                   <div className="flex items-center justify-between border-t border-border pt-3">
                     <div className="flex items-center gap-2">
-                      <Switch
-                        checked={meal.available}
-                        onCheckedChange={() => toggleAvailability(meal.id)}
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {t("meals.availability")}
-                      </span>
+                      <Switch checked={meal.available} onCheckedChange={() => toggleAvailability(meal.id)} />
+                      <span className="text-xs text-muted-foreground">{t("meals.availability")}</span>
                     </div>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(meal)}>
@@ -242,15 +183,17 @@ const MealsPage = () => {
           </div>
         )}
 
-        {/* Add/Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>
-                {editingMeal ? t("meals.editMeal") : t("meals.addMeal")}
-              </DialogTitle>
+              <DialogTitle>{editingMeal ? t("meals.editMeal") : t("meals.addMeal")}</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              <ImageUpload
+                value={form.image}
+                onChange={(url) => setForm({ ...form, image: url })}
+                label={t("meals.mealPhoto")}
+              />
               <div className="grid gap-2">
                 <Label>{t("meals.mealName")}</Label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
