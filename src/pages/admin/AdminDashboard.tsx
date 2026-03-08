@@ -71,54 +71,61 @@ const AdminDashboard = () => {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Recent Restaurants */}
+          {/* System Status */}
           <Card className="animate-slide-up" style={{ animationDelay: "320ms", animationFillMode: "both" }}>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{t("admin.recentRestaurants")}</CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/admin/restaurants")} className="text-primary">
-                <ArrowRight className={cn("h-4 w-4", isRTL && "rotate-180")} />
-              </Button>
+            <CardHeader>
+              <CardTitle>{t("admin.systemStatus")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {mockRestaurants.slice(0, 3).map((r) => (
-                  <div key={r.id} className="flex items-center justify-between rounded-xl glass-subtle p-3 transition-all duration-200 hover:bg-accent/40">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{r.name}</p>
-                      <p className="text-xs text-muted-foreground">{r.owner} · {r.city}</p>
-                    </div>
-                    <Badge className={cn("border", restaurantStatusColors[r.status])} variant="secondary">
-                      {t(`admin.status.${r.status}`)}
-                    </Badge>
+                <div className="flex items-center justify-between rounded-xl glass-subtle p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 w-2 rounded-full bg-chart-2 animate-pulse"></div>
+                    <span className="text-sm font-medium text-foreground">{t("admin.apiStatus")}</span>
                   </div>
-                ))}
+                  <span className="text-xs text-chart-2">{t("admin.operational")}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl glass-subtle p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 w-2 rounded-full bg-chart-2 animate-pulse"></div>
+                    <span className="text-sm font-medium text-foreground">{t("admin.databaseStatus")}</span>
+                  </div>
+                  <span className="text-xs text-chart-2">{t("admin.operational")}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl glass-subtle p-3">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="h-4 w-4 text-chart-5" />
+                    <span className="text-sm font-medium text-foreground">{t("admin.pendingReviews")}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">3 {t("admin.items")}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Recent Orders */}
+          {/* Recent Activity */}
           <Card className="animate-slide-up" style={{ animationDelay: "400ms", animationFillMode: "both" }}>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{t("admin.recentOrders")}</CardTitle>
+              <CardTitle>{t("admin.recentActivity")}</CardTitle>
               <Button variant="ghost" size="sm" onClick={() => navigate("/admin/orders")} className="text-primary">
                 <ArrowRight className={cn("h-4 w-4", isRTL && "rotate-180")} />
               </Button>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {mockPlatformOrders.slice(0, 3).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between rounded-xl glass-subtle p-3 transition-all duration-200 hover:bg-accent/40">
-                    <div>
+                {mockPlatformOrders.slice(0, 4).map((order, i) => (
+                  <div key={order.id} className="flex items-center gap-3 rounded-xl glass-subtle p-3 transition-all duration-200 hover:bg-accent/40">
+                    <div className="flex-1">
                       <p className="text-sm font-medium text-foreground">{order.customerName}</p>
-                      <p className="text-xs text-muted-foreground">{order.restaurantName} · {order.id}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("admin.ordered")} {order.items} · {order.restaurantName}
+                      </p>
                     </div>
-                    <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
-                      <span className="text-sm font-semibold text-foreground inline-flex items-center gap-1">
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-foreground inline-flex items-center gap-1">
                         <OmrSymbol size={13} /> {order.total}
-                      </span>
-                      <Badge className={cn("border", statusColors[order.status])} variant="secondary">
-                        {t(`orders.${order.status === "picked_up" ? "pickedUp" : order.status}`)}
-                      </Badge>
+                      </p>
+                      <p className="text-xs text-muted-foreground">{order.date}</p>
                     </div>
                   </div>
                 ))}
