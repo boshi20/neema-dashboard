@@ -31,6 +31,12 @@ const MealsPage = () => {
     const saved = localStorage.getItem("saveplate_meals");
     return saved ? JSON.parse(saved) : mockMeals;
   });
+
+
+  useEffect(() => {
+    localStorage.setItem("saveplate_meals", JSON.stringify(meals));
+  }, [meals]);
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
