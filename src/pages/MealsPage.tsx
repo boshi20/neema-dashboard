@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import OmrSymbol from "@/components/OmrSymbol";
 import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -27,7 +27,16 @@ const MealsPage = () => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const { toast } = useToast();
-  const [meals, setMeals] = useState<Meal[]>(mockMeals);
+  const [meals, setMeals] = useState<Meal[]>(() => {
+    const saved = localStorage.getItem("saveplate_meals");
+    return saved ? JSON.parse(saved) : mockMeals;
+  });
+
+
+  useEffect(() => {
+    localStorage.setItem("saveplate_meals", JSON.stringify(meals));
+  }, [meals]);
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
