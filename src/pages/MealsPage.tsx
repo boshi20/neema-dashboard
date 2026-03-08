@@ -123,10 +123,10 @@ const MealsPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold text-foreground">{t("meals.title")}</h1>
-          <Button onClick={openAdd} className="gap-2">
+      <div className="space-y-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-slide-up">
+          <h1 className="text-3xl font-bold text-foreground">{t("meals.title")}</h1>
+          <Button onClick={openAdd} className="gap-2 gradient-primary shadow-glow hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" />
             {t("meals.addMeal")}
           </Button>
@@ -151,11 +151,11 @@ const MealsPage = () => {
           <div className="py-12 text-center text-muted-foreground">{t("meals.noMeals")}</div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((meal) => (
-              <Card key={meal.id} className="overflow-hidden">
-                <div className="h-32 bg-accent flex items-center justify-center overflow-hidden">
+            {filtered.map((meal, i) => (
+              <Card key={meal.id} className="overflow-hidden animate-scale-in group" style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}>
+                <div className="h-36 bg-accent/50 flex items-center justify-center overflow-hidden">
                   {meal.image ? (
-                    <img src={meal.image} alt={meal.name} className="h-full w-full object-cover" />
+                    <img src={meal.image} alt={meal.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                   ) : (
                     <span className="text-4xl">🍽️</span>
                   )}

@@ -23,7 +23,6 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Mock login — any email/password works
     setTimeout(() => {
       login({
         id: "1",
@@ -38,19 +37,28 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <div className="absolute top-4 right-4">
         <LanguageSwitcher />
       </div>
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-2">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <UtensilsCrossed className="h-6 w-6 text-primary-foreground" />
+      
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-chart-2/5 blur-3xl" />
+      </div>
+
+      <Card className="w-full max-w-md animate-scale-in relative">
+        <CardHeader className="text-center space-y-4 pb-2">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl gradient-primary shadow-glow">
+            <UtensilsCrossed className="h-7 w-7 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">SavePlate</CardTitle>
-          <p className="text-sm text-muted-foreground">{t("login.subtitle")}</p>
+          <div>
+            <CardTitle className="text-2xl font-bold">SavePlate</CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">{t("login.subtitle")}</p>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="email">{t("login.email")}</Label>
@@ -60,6 +68,7 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="restaurant@saveplate.com"
+                className="h-11 glass-subtle"
                 required
               />
             </div>
@@ -71,10 +80,11 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                className="h-11 glass-subtle"
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 gradient-primary shadow-glow hover:opacity-90 transition-opacity text-base font-medium" disabled={loading}>
               {loading ? t("common.loading") : t("login.signIn")}
             </Button>
           </form>
