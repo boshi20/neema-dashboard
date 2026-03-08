@@ -98,7 +98,8 @@ const MealsPage = () => {
       toast({ title: t("meals.editMeal"), description: form.name });
     } else {
       const newMeal: Meal = {
-        id: String(Date.now()), name: form.name, description: form.description,
+        id: String(Date.now()), name: form.name, nameAr: form.nameAr,
+        description: form.description, descriptionAr: form.descriptionAr,
         originalPrice: Number(form.originalPrice), discountedPrice: Number(form.discountedPrice),
         quantity: Number(form.quantity), availableQuantity: Number(form.quantity),
         category: form.category, image: form.image, available: true,
