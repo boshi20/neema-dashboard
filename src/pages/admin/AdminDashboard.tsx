@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Store, ShoppingBag, Users, TrendingUp, ArrowRight } from "lucide-react";
+import { Store, ShoppingBag, Users, TrendingUp, ArrowRight, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
