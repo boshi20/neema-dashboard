@@ -88,7 +88,7 @@ const MealsPage = () => {
       setMeals((prev) =>
         prev.map((m) =>
           m.id === editingMeal.id
-            ? { ...m, name: form.name, description: form.description,
+            ? { ...m, name: form.name, nameAr: form.nameAr, description: form.description, descriptionAr: form.descriptionAr,
                 originalPrice: Number(form.originalPrice), discountedPrice: Number(form.discountedPrice),
                 quantity: Number(form.quantity), category: form.category,
                 pickupFrom: form.pickupFrom, pickupTo: form.pickupTo, image: form.image }
