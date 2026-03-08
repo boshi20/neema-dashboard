@@ -25,7 +25,8 @@ import ImageUpload from "@/components/ImageUpload";
 
 const MealsPage = () => {
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
+  const { isRTL, currentLanguage } = useLanguage();
+  const isAr = currentLanguage === "ar";
   const { toast } = useToast();
   const [meals, setMeals] = useState<Meal[]>(() => {
     const saved = localStorage.getItem("saveplate_meals");
