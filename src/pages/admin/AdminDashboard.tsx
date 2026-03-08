@@ -60,7 +60,10 @@ const AdminDashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-2xl font-bold text-foreground flex items-center gap-1">
+                    {"showOmr" in stat && stat.showOmr && <OmrSymbol size={18} />}
+                    {stat.value}
+                  </p>
                 </div>
               </CardContent>
             </Card>
