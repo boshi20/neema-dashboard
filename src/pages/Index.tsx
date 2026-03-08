@@ -142,7 +142,7 @@ const Index = () => {
                     </div>
                     <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
                       <span className="text-sm font-semibold text-foreground">
-                        ${order.total}
+                        {order.total} ر.ع.
                       </span>
                       <Badge className={statusColors[order.status]} variant="secondary">
                         {t(`orders.${order.status === "picked_up" ? "pickedUp" : order.status}`)}

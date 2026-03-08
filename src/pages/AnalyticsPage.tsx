@@ -8,7 +8,7 @@ const AnalyticsPage = () => {
 
   const stats = [
     { title: t("analytics.mealsSaved"), value: "1,247", icon: Leaf, color: "text-chart-4" },
-    { title: t("analytics.totalRevenue"), value: "$8,420", icon: DollarSign, color: "text-chart-1" },
+    { title: t("analytics.totalRevenue"), value: "8,420 ر.ع.", icon: DollarSign, color: "text-chart-1" },
     { title: t("analytics.avgRating"), value: "4.8", icon: Star, color: "text-chart-3" },
     { title: t("analytics.totalCustomers"), value: "342", icon: Users, color: "text-chart-2" },
   ];
