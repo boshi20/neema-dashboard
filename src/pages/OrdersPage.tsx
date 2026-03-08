@@ -95,7 +95,7 @@ const OrdersPage = () => {
                       <TableCell>
                         {order.items.map((i) => `${i.mealName} x${i.quantity}`).join(", ")}
                       </TableCell>
-                      <TableCell><span className="inline-flex items-center gap-1"><OmrSymbol size={14} /> {order.total}</span></TableCell>
+                      <TableCell><span className="inline-flex items-center gap-1.5"><OmrSymbol size={18} /> {order.total}</span></TableCell>
                       <TableCell>
                         <Badge className={statusColors[order.status]} variant="secondary">
                           {statusLabel(order.status)}

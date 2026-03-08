@@ -154,8 +154,8 @@ const MealsPage = () => {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-primary inline-flex items-center gap-1"><OmrSymbol size={16} /> {meal.discountedPrice}</span>
-                    <span className="text-sm text-muted-foreground line-through inline-flex items-center gap-1"><OmrSymbol size={13} /> {meal.originalPrice}</span>
+                    <span className="text-lg font-bold text-primary inline-flex items-center gap-1.5"><OmrSymbol size={20} /> {meal.discountedPrice}</span>
+                    <span className="text-sm text-muted-foreground line-through inline-flex items-center gap-1"><OmrSymbol size={16} /> {meal.originalPrice}</span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
