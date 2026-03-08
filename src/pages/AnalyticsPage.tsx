@@ -28,7 +28,7 @@ const AnalyticsPage = () => {
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
                   <p className="text-2xl font-bold text-foreground flex items-center gap-1">
-                    {"showOmr" in stat && stat.showOmr && <OmrSymbol size={18} />}
+                    {"showOmr" in stat && stat.showOmr && <OmrSymbol size={22} />}
                     {stat.value}
                   </p>
                 </div>

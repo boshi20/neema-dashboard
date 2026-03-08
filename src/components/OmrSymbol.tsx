@@ -5,7 +5,7 @@ interface OmrSymbolProps {
   size?: number;
 }
 
-const OmrSymbol = ({ className, size = 16 }: OmrSymbolProps) => (
+const OmrSymbol = ({ className, size = 20 }: OmrSymbolProps) => (
   <img
     src={omrSymbol}
     alt="OMR"
