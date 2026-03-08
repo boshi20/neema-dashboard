@@ -25,6 +25,8 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
