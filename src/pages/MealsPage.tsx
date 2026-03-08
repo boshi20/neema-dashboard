@@ -123,10 +123,10 @@ const MealsPage = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold text-foreground">{t("meals.title")}</h1>
-          <Button onClick={openAdd} className="gap-2">
+      <div className="space-y-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-slide-up">
+          <h1 className="text-3xl font-bold text-foreground">{t("meals.title")}</h1>
+          <Button onClick={openAdd} className="gap-2 gradient-primary shadow-glow hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" />
             {t("meals.addMeal")}
           </Button>
