@@ -1,4 +1,5 @@
 import { useState } from "react";
+import OmrSymbol from "@/components/OmrSymbol";
 import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -153,8 +154,8 @@ const MealsPage = () => {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-primary">{meal.discountedPrice} ر.ع.</span>
-                    <span className="text-sm text-muted-foreground line-through">{meal.originalPrice} ر.ع.</span>
+                    <span className="text-lg font-bold text-primary">{meal.discountedPrice} <OmrSymbol size={14} /></span>
+                    <span className="text-sm text-muted-foreground line-through">{meal.originalPrice} <OmrSymbol size={12} /></span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />

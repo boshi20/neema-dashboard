@@ -2,13 +2,14 @@ import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf, DollarSign, Star, Users } from "lucide-react";
+import OmrSymbol from "@/components/OmrSymbol";
 
 const AnalyticsPage = () => {
   const { t } = useTranslation();
 
   const stats = [
     { title: t("analytics.mealsSaved"), value: "1,247", icon: Leaf, color: "text-chart-4" },
-    { title: t("analytics.totalRevenue"), value: "8,420 ر.ع.", icon: DollarSign, color: "text-chart-1" },
+    { title: t("analytics.totalRevenue"), value: "8,420", icon: DollarSign, color: "text-chart-1", showOmr: true },
     { title: t("analytics.avgRating"), value: "4.8", icon: Star, color: "text-chart-3" },
     { title: t("analytics.totalCustomers"), value: "342", icon: Users, color: "text-chart-2" },
   ];
@@ -26,7 +27,10 @@ const AnalyticsPage = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-2xl font-bold text-foreground flex items-center gap-1">
+                    {stat.value}
+                    {"showOmr" in stat && stat.showOmr && <OmrSymbol size={18} />}
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import OmrSymbol from "@/components/OmrSymbol";
 import { useTranslation } from "react-i18next";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,7 +95,7 @@ const OrdersPage = () => {
                       <TableCell>
                         {order.items.map((i) => `${i.mealName} x${i.quantity}`).join(", ")}
                       </TableCell>
-                      <TableCell>{order.total} ر.ع.</TableCell>
+                      <TableCell>{order.total} <OmrSymbol size={14} /></TableCell>
                       <TableCell>
                         <Badge className={statusColors[order.status]} variant="secondary">
                           {statusLabel(order.status)}
