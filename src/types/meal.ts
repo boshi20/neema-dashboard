@@ -1,7 +1,9 @@
 export interface Meal {
   id: string;
   name: string;
+  nameAr: string;
   description: string;
+  descriptionAr: string;
   originalPrice: number;
   discountedPrice: number;
   quantity: number;
