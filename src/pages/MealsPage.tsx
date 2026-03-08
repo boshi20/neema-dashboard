@@ -217,8 +217,16 @@ const MealsPage = () => {
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div className="grid gap-2">
+                <Label>{t("meals.mealNameAr")}</Label>
+                <Input value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} dir="rtl" />
+              </div>
+              <div className="grid gap-2">
                 <Label>{t("meals.description")}</Label>
                 <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>{t("meals.descriptionAr")}</Label>
+                <Textarea value={form.descriptionAr} onChange={(e) => setForm({ ...form, descriptionAr: e.target.value })} dir="rtl" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
