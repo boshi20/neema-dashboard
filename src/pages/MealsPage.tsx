@@ -65,7 +65,7 @@ const MealsPage = () => {
   const openAdd = () => {
     setEditingMeal(null);
     setForm({
-      name: "", description: "", originalPrice: "", discountedPrice: "",
+      name: "", nameAr: "", description: "", descriptionAr: "", originalPrice: "", discountedPrice: "",
       quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "", image: "",
     });
     setDialogOpen(true);
