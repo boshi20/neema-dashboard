@@ -50,6 +50,12 @@ const MealsPage = () => {
     "all", "appetizers", "mainCourse", "desserts", "beverages", "bakery", "salads",
   ];
 
+  const timeOptions = Array.from({ length: 48 }, (_, i) => {
+    const h = String(Math.floor(i / 2)).padStart(2, "0");
+    const m = i % 2 === 0 ? "00" : "30";
+    return `${h}:${m}`;
+  });
+
   const filtered = meals.filter((m) => {
     const matchSearch = m.name.toLowerCase().includes(search.toLowerCase());
     const matchCategory = categoryFilter === "all" || m.category === categoryFilter;
@@ -242,11 +248,25 @@ const MealsPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>{t("meals.pickupFrom")}</Label>
-                  <Input type="time" value={form.pickupFrom} onChange={(e) => setForm({ ...form, pickupFrom: e.target.value })} />
+                  <Select value={form.pickupFrom} onValueChange={(v) => setForm({ ...form, pickupFrom: v })}>
+                    <SelectTrigger><SelectValue placeholder="--:--" /></SelectTrigger>
+                    <SelectContent className="max-h-48">
+                      {timeOptions.map((time) => (
+                        <SelectItem key={time} value={time}>{time}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label>{t("meals.pickupTo")}</Label>
-                  <Input type="time" value={form.pickupTo} onChange={(e) => setForm({ ...form, pickupTo: e.target.value })} />
+                  <Select value={form.pickupTo} onValueChange={(v) => setForm({ ...form, pickupTo: v })}>
+                    <SelectTrigger><SelectValue placeholder="--:--" /></SelectTrigger>
+                    <SelectContent className="max-h-48">
+                      {timeOptions.map((time) => (
+                        <SelectItem key={time} value={time}>{time}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
