@@ -74,7 +74,7 @@ const MealsPage = () => {
   const openEdit = (meal: Meal) => {
     setEditingMeal(meal);
     setForm({
-      name: meal.name, description: meal.description,
+      name: meal.name, nameAr: meal.nameAr, description: meal.description, descriptionAr: meal.descriptionAr,
       originalPrice: String(meal.originalPrice), discountedPrice: String(meal.discountedPrice),
       quantity: String(meal.quantity), category: meal.category,
       pickupFrom: meal.pickupFrom, pickupTo: meal.pickupTo, image: meal.image,
