@@ -151,7 +151,7 @@ const MealsPage = () => {
           <div className="py-12 text-center text-muted-foreground">{t("meals.noMeals")}</div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((meal) => (
+            {filtered.map((meal, i) => (
               <Card key={meal.id} className="overflow-hidden animate-scale-in group" style={{ animationDelay: `${i * 60}ms`, animationFillMode: "both" }}>
                 <div className="h-36 bg-accent/50 flex items-center justify-center overflow-hidden">
                   {meal.image ? (
