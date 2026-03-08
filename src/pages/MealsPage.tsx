@@ -42,7 +42,7 @@ const MealsPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [form, setForm] = useState({
-    name: "", description: "", originalPrice: "", discountedPrice: "",
+    name: "", nameAr: "", description: "", descriptionAr: "", originalPrice: "", discountedPrice: "",
     quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "", image: "",
   });
 
