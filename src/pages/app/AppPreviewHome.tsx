@@ -37,12 +37,14 @@ const AppPreviewHome = () => {
       <div className="p-4 space-y-4">
         {/* Impact Banner */}
         <ImpactBanner />
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Available Meals</h2>
-          <span className="text-sm text-muted-foreground">
-            {mockMeals.filter(m => m.available).length} meals
-          </span>
-        </div>
+        {/* Meals Section */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold">Meals Near You</h2>
+            <span className="text-sm text-muted-foreground">
+              {mockMeals.filter(m => m.available).length} available
+            </span>
+          </div>
 
         <div className="space-y-4">
           {mockMeals.map((meal) => (
