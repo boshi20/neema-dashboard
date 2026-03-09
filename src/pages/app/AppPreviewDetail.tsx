@@ -30,8 +30,8 @@ const AppPreviewDetail = () => {
 
   return (
     <div className="min-h-screen pb-24">
-      {/* Header */}
-      <div className="glass sticky top-0 z-40 border-b border-border/40 backdrop-blur-lg">
+      {/* Header - Clean background */}
+      <div className="bg-card sticky top-0 z-40 border-b border-border backdrop-blur-lg">
         <div className="p-4 flex items-center gap-4">
           <Button
             variant="ghost"
@@ -40,7 +40,8 @@ const AppPreviewDetail = () => {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-semibold line-clamp-1">{mealName}</h1>
+          <h1 className="text-lg font-semibold line-clamp-1 flex-1">{mealName}</h1>
+          <FavoriteButton mealId={meal.id} />
         </div>
       </div>
 
