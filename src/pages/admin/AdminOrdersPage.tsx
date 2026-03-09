@@ -143,6 +143,25 @@ const AdminOrdersPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>{order.date}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {order.status === "pending" && (
+                              <DropdownMenuItem onClick={() => handleAction("confirm", order)}>
+                                <CheckCircle className="h-4 w-4 mr-2" /> {t("common.confirm")}
+                              </DropdownMenuItem>
+                            )}
+                            {order.status !== "cancelled" && order.status !== "picked_up" && (
+                              <DropdownMenuItem onClick={() => handleAction("cancel", order)} className="text-destructive">
+                                <XCircle className="h-4 w-4 mr-2" /> {t("common.cancel")}
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
