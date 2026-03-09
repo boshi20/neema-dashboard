@@ -5,6 +5,7 @@ import { TrendingUp, DollarSign, Store, ShoppingBag } from "lucide-react";
 import OmrSymbol from "@/components/OmrSymbol";
 import { cn } from "@/lib/utils";
 import { mockRestaurants, mockPlatformOrders } from "@/data/adminMockData";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const AdminAnalyticsPage = () => {
   const { t } = useTranslation();
