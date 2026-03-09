@@ -53,7 +53,7 @@ const AdminLoginPage = () => {
             <Shield className="h-7 w-7 text-destructive" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">SavePlate Admin</CardTitle>
+            <CardTitle className="text-2xl font-bold">Neema Admin</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">{t("admin.loginSubtitle")}</p>
           </div>
         </CardHeader>
@@ -66,7 +66,7 @@ const AdminLoginPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@saveplate.com"
+                placeholder="admin@neema.com"
                 className="h-11 glass-subtle"
                 required
               />

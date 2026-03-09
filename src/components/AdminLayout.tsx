@@ -67,7 +67,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             <Shield className="h-5 w-5 text-destructive" />
           </div>
           <div>
-            <span className="text-lg font-bold text-foreground tracking-tight">SavePlate</span>
+            <span className="text-lg font-bold text-foreground tracking-tight">Neema</span>
             <span className="block text-xs text-muted-foreground">{t("admin.adminPanel")}</span>
           </div>
           <Button

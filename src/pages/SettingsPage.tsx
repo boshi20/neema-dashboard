@@ -21,10 +21,10 @@ const SettingsPage = () => {
   const { toast } = useToast();
 
   const [logo, setLogo] = useState(user?.logo || "");
-  const [restaurantName, setRestaurantName] = useState(user?.restaurantName || "SavePlate Restaurant");
+  const [restaurantName, setRestaurantName] = useState(user?.restaurantName || "Neema Restaurant");
   const [address, setAddress] = useState("123 Main Street, Riyadh");
   const [phone, setPhone] = useState("+966 50 123 4567");
-  const [email, setEmail] = useState(user?.email || "info@saveplate.com");
+  const [email, setEmail] = useState(user?.email || "info@neema.com");
   const [lat, setLat] = useState(24.7136);
   const [lng, setLng] = useState(46.6753);
 

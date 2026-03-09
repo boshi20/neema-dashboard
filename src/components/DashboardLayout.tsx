@@ -61,7 +61,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <UtensilsCrossed className="h-5 w-5 text-primary-foreground" />
             </div>
           )}
-          <span className="text-lg font-bold text-foreground tracking-tight">{user?.restaurantName || "SavePlate"}</span>
+          <span className="text-lg font-bold text-foreground tracking-tight">{user?.restaurantName || "Neema"}</span>
           <Button
             variant="ghost"
             size="icon"

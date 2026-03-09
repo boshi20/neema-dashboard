@@ -27,7 +27,7 @@ const LoginPage = () => {
       login({
         id: "1",
         email,
-        restaurantName: "SavePlate Restaurant",
+        restaurantName: "Neema Restaurant",
         logo: "",
       });
       toast({ title: t("login.success") });
@@ -54,7 +54,7 @@ const LoginPage = () => {
             <UtensilsCrossed className="h-7 w-7 text-primary-foreground" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">SavePlate</CardTitle>
+            <CardTitle className="text-2xl font-bold">Neema</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">{t("login.subtitle")}</p>
           </div>
         </CardHeader>
@@ -67,7 +67,7 @@ const LoginPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="restaurant@saveplate.com"
+                placeholder="restaurant@neema.com"
                 className="h-11 glass-subtle"
                 required
               />
