@@ -22,7 +22,10 @@ import AdminContentPage from "./pages/admin/AdminContentPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
-import "./i18n";
+import AppPreviewLayout from "./layouts/AppPreviewLayout";
+import AppPreviewHome from "./pages/app/AppPreviewHome";
+import AppPreviewDetail from "./pages/app/AppPreviewDetail";
+import AppPreviewCart from "./pages/app/AppPreviewCart";
 import "./i18n";
 
 const queryClient = new QueryClient();
