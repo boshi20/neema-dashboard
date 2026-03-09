@@ -54,7 +54,7 @@ const LoginPage = () => {
             <UtensilsCrossed className="h-7 w-7 text-primary-foreground" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">SavePlate</CardTitle>
+            <CardTitle className="text-2xl font-bold">Neema</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">{t("login.subtitle")}</p>
           </div>
         </CardHeader>
