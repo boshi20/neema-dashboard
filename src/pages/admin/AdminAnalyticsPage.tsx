@@ -26,6 +26,25 @@ const AdminAnalyticsPage = () => {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
 
+  // Revenue trend data (last 7 days)
+  const revenueData = [
+    { date: "Mar 2", revenue: 320, orders: 18 },
+    { date: "Mar 3", revenue: 425, orders: 24 },
+    { date: "Mar 4", revenue: 380, orders: 21 },
+    { date: "Mar 5", revenue: 510, orders: 29 },
+    { date: "Mar 6", revenue: 445, orders: 26 },
+    { date: "Mar 7", revenue: 590, orders: 34 },
+    { date: "Mar 8", revenue: 680, orders: 39 },
+  ];
+
+  // Orders by status
+  const orderStatusData = [
+    { status: "Pending", count: mockPlatformOrders.filter(o => o.status === "pending").length },
+    { status: "Confirmed", count: mockPlatformOrders.filter(o => o.status === "confirmed").length },
+    { status: "Picked Up", count: mockPlatformOrders.filter(o => o.status === "picked_up").length },
+    { status: "Cancelled", count: mockPlatformOrders.filter(o => o.status === "cancelled").length },
+  ];
+
   return (
     <AdminLayout>
       <div className="space-y-8">
