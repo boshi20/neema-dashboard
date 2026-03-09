@@ -11,11 +11,20 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, Store } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Store, MoreVertical, Edit, Ban, CheckCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import OmrSymbol from "@/components/OmrSymbol";
-import { mockRestaurants } from "@/data/adminMockData";
+import { mockRestaurants, type Restaurant } from "@/data/adminMockData";
+import { toast } from "@/hooks/use-toast";
 
 const AdminRestaurantsPage = () => {
   const { t } = useTranslation();
