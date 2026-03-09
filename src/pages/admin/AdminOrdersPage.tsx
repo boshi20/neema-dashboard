@@ -31,6 +31,29 @@ const AdminOrdersPage = () => {
   const { isRTL } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dialogState, setDialogState] = useState<{ open: boolean; action: string; order: PlatformOrder | null }>({
+    open: false, action: "", order: null,
+  });
+
+  const handleAction = (action: string, order: PlatformOrder) => {
+    setDialogState({ open: true, action, order });
+  };
+
+  const confirmAction = () => {
+    const { action, order } = dialogState;
+    if (!order) return;
+
+    const actionMessages: Record<string, string> = {
+      cancel: `Order ${order.id} cancelled`,
+      confirm: `Order ${order.id} confirmed`,
+    };
+
+    toast({
+      title: t("common.success"),
+      description: actionMessages[action] || "Action completed",
+    });
+    setDialogState({ open: false, action: "", order: null });
+  };
 
   const statuses = ["all", "pending", "confirmed", "picked_up", "cancelled"];
 
