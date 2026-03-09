@@ -10,14 +10,6 @@ import { useTranslation } from "react-i18next";
 const AppPreviewHome = () => {
   const { t } = useTranslation();
 
-  const categories = [
-    { id: "all", label: "All" },
-    { id: "mainCourse", label: "Main Course" },
-    { id: "appetizers", label: "Appetizers" },
-    { id: "desserts", label: "Desserts" },
-    { id: "beverages", label: "Beverages" },
-  ];
-
   return (
     <div className="min-h-screen">
       {/* Header */}
