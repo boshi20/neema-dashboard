@@ -170,6 +170,12 @@ export const en = {
     topRestaurants: "Top Restaurants by Revenue",
     ordersLabel: "orders",
     restaurantView: "Restaurant View",
+    revenueOverTime: "Revenue Over Time",
+    ordersByStatus: "Orders by Status",
+    payments: "Payments",
+    content: "Content",
+    reports: "Reports",
+    systemSettings: "Settings",
     status: {
       active: "Active",
       pending: "Pending",
