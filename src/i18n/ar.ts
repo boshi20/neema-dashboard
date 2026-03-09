@@ -28,6 +28,11 @@ export const ar = {
     confirm: "تأكيد",
     back: "رجوع",
     uploadImage: "رفع صورة",
+    success: "نجح",
+    approve: "موافقة",
+    suspend: "تعليق",
+    resetPassword: "إعادة تعيين كلمة المرور",
+    confirmAction: "هل أنت متأكد من تنفيذ هذا الإجراء على {{name}}؟",
   },
   login: {
     subtitle: "سجّل الدخول إلى لوحة تحكم مطعمك",
