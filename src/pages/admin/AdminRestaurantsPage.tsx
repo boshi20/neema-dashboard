@@ -144,6 +144,31 @@ const AdminRestaurantsPage = () => {
                           {t(`admin.status.${r.status}`)}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleAction("edit", r)}>
+                              <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                            </DropdownMenuItem>
+                            {r.status === "pending" && (
+                              <DropdownMenuItem onClick={() => handleAction("approve", r)}>
+                                <CheckCircle className="h-4 w-4 mr-2" /> {t("common.approve")}
+                              </DropdownMenuItem>
+                            )}
+                            {r.status !== "suspended" && (
+                              <DropdownMenuItem onClick={() => handleAction("suspend", r)}>
+                                <Ban className="h-4 w-4 mr-2" /> {t("common.suspend")}
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => handleAction("delete", r)} className="text-destructive">
+                              <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
