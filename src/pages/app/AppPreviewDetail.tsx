@@ -45,15 +45,17 @@ const AppPreviewDetail = () => {
         </div>
       </div>
 
-      {/* Hero Image */}
-      <AspectRatio ratio={16 / 10}>
+      {/* Hero Image - Larger */}
+      <AspectRatio ratio={4 / 3}>
         <img
           src="/placeholder.svg"
           alt={mealName}
           className="object-cover w-full h-full"
         />
-        <Badge className="absolute top-4 right-4 bg-destructive text-lg px-4 py-2">
-          {discountPercent}% OFF
+        {/* Larger circular discount badge */}
+        <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground border-none h-20 w-20 rounded-full flex flex-col items-center justify-center p-0 shadow-xl">
+          <span className="text-3xl font-bold leading-none">{discountPercent}%</span>
+          <span className="text-xs font-medium">OFF</span>
         </Badge>
       </AspectRatio>
 
