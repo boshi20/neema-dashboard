@@ -2,7 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import OmrSymbol from "@/components/OmrSymbol";
-import { ArrowLeft, Clock, MapPin, Minus, Plus, ShoppingCart } from "lucide-react";
+import RestaurantCard from "@/components/app/RestaurantCard";
+import FavoriteButton from "@/components/app/FavoriteButton";
+import { ArrowLeft, Clock, MapPin, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { mockMeals } from "@/data/mockData";
@@ -28,8 +30,8 @@ const AppPreviewDetail = () => {
 
   return (
     <div className="min-h-screen pb-24">
-      {/* Header */}
-      <div className="glass sticky top-0 z-40 border-b border-border/40 backdrop-blur-lg">
+      {/* Header - Clean background */}
+      <div className="bg-card sticky top-0 z-40 border-b border-border backdrop-blur-lg">
         <div className="p-4 flex items-center gap-4">
           <Button
             variant="ghost"
@@ -38,38 +40,54 @@ const AppPreviewDetail = () => {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-semibold line-clamp-1">{mealName}</h1>
+          <h1 className="text-lg font-semibold line-clamp-1 flex-1">{mealName}</h1>
+          <FavoriteButton mealId={meal.id} />
         </div>
       </div>
 
-      {/* Hero Image */}
-      <AspectRatio ratio={16 / 10}>
+      {/* Hero Image - Larger */}
+      <AspectRatio ratio={4 / 3}>
         <img
           src="/placeholder.svg"
           alt={mealName}
           className="object-cover w-full h-full"
         />
-        <Badge className="absolute top-4 right-4 bg-destructive text-lg px-4 py-2">
-          {discountPercent}% OFF
+        {/* Larger circular discount badge */}
+        <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground border-none h-20 w-20 rounded-full flex flex-col items-center justify-center p-0 shadow-xl">
+          <span className="text-3xl font-bold leading-none">{discountPercent}%</span>
+          <span className="text-xs font-medium">OFF</span>
         </Badge>
       </AspectRatio>
 
       {/* Content */}
       <div className="p-4 space-y-4">
-        {/* Restaurant Info */}
+        {/* Restaurant Card with Follow */}
+        <RestaurantCard
+          name="Al Madina Restaurant"
+          location="Muscat, Oman"
+          rating={4.8}
+          totalReviews={234}
+        />
+
+        {/* Meal Info */}
         <Card>
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold">{mealName}</h2>
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  Al Madina Restaurant • Muscat, Oman
-                </p>
+            <h2 className="text-xl font-bold">{mealName}</h2>
+            <p className="text-sm text-muted-foreground">{description}</p>
+            
+            {/* Rating */}
+            <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="w-4 h-4 fill-primary text-primary"
+                  />
+                ))}
               </div>
+              <span className="text-sm font-medium">4.9</span>
+              <span className="text-sm text-muted-foreground">(127 reviews)</span>
             </div>
-
-            <p className="text-sm">{description}</p>
           </CardContent>
         </Card>
 
@@ -157,8 +175,8 @@ const AppPreviewDetail = () => {
         </Card>
       </div>
 
-      {/* Sticky Footer */}
-      <div className="fixed bottom-16 left-0 right-0 glass border-t border-border/40 backdrop-blur-lg p-4">
+      {/* Sticky Footer - Cleaner */}
+      <div className="fixed bottom-16 left-0 right-0 bg-card border-t border-border backdrop-blur-lg p-4 shadow-lg">
         <div className="max-w-md mx-auto flex items-center gap-4">
           <div className="flex-1">
             <div className="text-sm text-muted-foreground">Total</div>
@@ -167,7 +185,7 @@ const AppPreviewDetail = () => {
               <span>{total}</span>
             </div>
           </div>
-          <Button size="lg" className="gap-2 flex-1">
+          <Button size="lg" className="gap-2 flex-1 rounded-full">
             <ShoppingCart className="w-5 h-5" />
             Add to Cart
           </Button>

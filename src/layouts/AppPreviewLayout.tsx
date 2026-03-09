@@ -3,7 +3,7 @@ import BottomNav from "@/components/app/BottomNav";
 
 const AppPreviewLayout = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-background pb-16">
       <div className="max-w-md mx-auto">
         <Outlet />
       </div>
