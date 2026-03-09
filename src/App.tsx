@@ -68,6 +68,13 @@ const AppRoutes = () => {
       <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalyticsPage /></ProtectedAdminRoute>} />
       <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettingsPage /></ProtectedAdminRoute>} />
 
+      {/* Customer App Preview routes */}
+      <Route path="/app/preview" element={<AppPreviewLayout />}>
+        <Route path="home" element={<AppPreviewHome />} />
+        <Route path="detail" element={<AppPreviewDetail />} />
+        <Route path="cart" element={<AppPreviewCart />} />
+      </Route>
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
