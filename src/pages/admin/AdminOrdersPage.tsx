@@ -169,6 +169,21 @@ const AdminOrdersPage = () => {
             </Table>
           </CardContent>
         </Card>
+
+        <AlertDialog open={dialogState.open} onOpenChange={(open) => setDialogState({ ...dialogState, open })}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t(`common.${dialogState.action}`)}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("common.confirmAction", { name: dialogState.order?.id || "" })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmAction}>{t("common.confirm")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
