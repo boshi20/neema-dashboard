@@ -61,20 +61,33 @@ const AppPreviewDetail = () => {
 
       {/* Content */}
       <div className="p-4 space-y-4">
-        {/* Restaurant Info */}
+        {/* Restaurant Card with Follow */}
+        <RestaurantCard
+          name="Al Madina Restaurant"
+          location="Muscat, Oman"
+          rating={4.8}
+          totalReviews={234}
+        />
+
+        {/* Meal Info */}
         <Card>
           <CardContent className="p-4 space-y-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold">{mealName}</h2>
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  Al Madina Restaurant • Muscat, Oman
-                </p>
+            <h2 className="text-xl font-bold">{mealName}</h2>
+            <p className="text-sm text-muted-foreground">{description}</p>
+            
+            {/* Rating */}
+            <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="w-4 h-4 fill-primary text-primary"
+                  />
+                ))}
               </div>
+              <span className="text-sm font-medium">4.9</span>
+              <span className="text-sm text-muted-foreground">(127 reviews)</span>
             </div>
-
-            <p className="text-sm">{description}</p>
           </CardContent>
         </Card>
 
