@@ -79,13 +79,15 @@ const AdminContentPage = () => {
         </div>
 
         <Card className="animate-slide-up" style={{ animationDelay: "80ms", animationFillMode: "both" }}>
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="rounded-xl p-3 bg-chart-5/10">
-              <UtensilsCrossed className="h-6 w-6 text-chart-5" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pending Approval</p>
-              <p className="text-2xl font-bold text-foreground">{pendingCount} meals</p>
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Pending Approval</p>
+                <p className="text-3xl font-bold text-foreground">{pendingCount} meals</p>
+              </div>
+              <div className="rounded-xl p-3 bg-chart-5/10">
+                <UtensilsCrossed className="h-6 w-6 text-chart-5" />
+              </div>
             </div>
           </CardContent>
         </Card>
