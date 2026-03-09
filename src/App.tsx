@@ -17,7 +17,12 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRestaurantsPage from "./pages/admin/AdminRestaurantsPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminPaymentsPage from "./pages/admin/AdminPaymentsPage";
+import AdminContentPage from "./pages/admin/AdminContentPage";
+import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import "./i18n";
 import "./i18n";
 
 const queryClient = new QueryClient();
