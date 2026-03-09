@@ -86,16 +86,18 @@ const AdminPaymentsPage = () => {
         <div className="grid gap-4 sm:grid-cols-3">
           {stats.map((stat, i) => (
             <Card key={stat.title} className="animate-slide-up" style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}>
-              <CardContent className="flex items-center gap-4 p-5">
-                <div className={cn("rounded-xl p-3", stat.bgClass)}>
-                  <stat.icon className={cn("h-6 w-6", stat.iconClass)} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold text-foreground flex items-center gap-1">
-                    {stat.showOmr && <OmrSymbol size={18} />}
-                    {stat.value}
-                  </p>
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-muted-foreground mb-2">{stat.title}</p>
+                    <p className="text-3xl font-bold text-foreground flex items-baseline gap-1.5">
+                      {stat.showOmr && <OmrSymbol size={20} />}
+                      {stat.value}
+                    </p>
+                  </div>
+                  <div className={cn("rounded-xl p-3", stat.bgClass)}>
+                    <stat.icon className={cn("h-6 w-6", stat.iconClass)} />
+                  </div>
                 </div>
               </CardContent>
             </Card>
