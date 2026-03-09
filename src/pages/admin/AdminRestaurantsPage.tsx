@@ -32,6 +32,31 @@ const AdminRestaurantsPage = () => {
   const isAr = currentLanguage === "ar";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dialogState, setDialogState] = useState<{ open: boolean; action: string; restaurant: Restaurant | null }>({
+    open: false, action: "", restaurant: null,
+  });
+
+  const handleAction = (action: string, restaurant: Restaurant) => {
+    setDialogState({ open: true, action, restaurant });
+  };
+
+  const confirmAction = () => {
+    const { action, restaurant } = dialogState;
+    if (!restaurant) return;
+
+    const actionMessages: Record<string, string> = {
+      approve: `${restaurant.name} approved`,
+      suspend: `${restaurant.name} suspended`,
+      delete: `${restaurant.name} deleted`,
+      edit: `${restaurant.name} details saved`,
+    };
+
+    toast({
+      title: t("common.success"),
+      description: actionMessages[action] || "Action completed",
+    });
+    setDialogState({ open: false, action: "", restaurant: null });
+  };
 
   const statuses = ["all", "active", "pending", "suspended"];
 
