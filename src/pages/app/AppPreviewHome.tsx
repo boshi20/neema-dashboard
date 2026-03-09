@@ -46,10 +46,11 @@ const AppPreviewHome = () => {
             </span>
           </div>
 
-        <div className="space-y-4">
-          {mockMeals.map((meal) => (
-            <MealCard key={meal.id} meal={meal} />
-          ))}
+          <div className="space-y-4">
+            {mockMeals.map((meal) => (
+              <MealCard key={meal.id} meal={meal} />
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -185,7 +185,7 @@ const AppPreviewDetail = () => {
               <span>{total}</span>
             </div>
           </div>
-          <Button size="lg" className="gap-2 flex-1">
+          <Button size="lg" className="gap-2 flex-1 rounded-full">
             <ShoppingCart className="w-5 h-5" />
             Add to Cart
           </Button>
