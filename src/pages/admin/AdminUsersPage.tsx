@@ -30,6 +30,31 @@ const AdminUsersPage = () => {
   const { isRTL } = useLanguage();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [dialogState, setDialogState] = useState<{ open: boolean; action: string; user: PlatformUser | null }>({
+    open: false, action: "", user: null,
+  });
+
+  const handleAction = (action: string, user: PlatformUser) => {
+    setDialogState({ open: true, action, user });
+  };
+
+  const confirmAction = () => {
+    const { action, user } = dialogState;
+    if (!user) return;
+
+    const actionMessages: Record<string, string> = {
+      suspend: `${user.name} suspended`,
+      delete: `${user.name} deleted`,
+      edit: `${user.name} details saved`,
+      resetPassword: `Password reset link sent to ${user.email}`,
+    };
+
+    toast({
+      title: t("common.success"),
+      description: actionMessages[action] || "Action completed",
+    });
+    setDialogState({ open: false, action: "", user: null });
+  };
 
   const roles = ["all", "customer", "restaurant_owner"];
 
