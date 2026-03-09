@@ -27,7 +27,7 @@ const LoginPage = () => {
       login({
         id: "1",
         email,
-        restaurantName: "SavePlate Restaurant",
+        restaurantName: "Neema Restaurant",
         logo: "",
       });
       toast({ title: t("login.success") });
