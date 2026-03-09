@@ -144,6 +144,29 @@ const AdminUsersPage = () => {
                           {t(`admin.status.${user.status}`)}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleAction("edit", user)}>
+                              <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleAction("resetPassword", user)}>
+                              <Key className="h-4 w-4 mr-2" /> {t("common.resetPassword")}
+                            </DropdownMenuItem>
+                            {user.status !== "suspended" && (
+                              <DropdownMenuItem onClick={() => handleAction("suspend", user)}>
+                                <Ban className="h-4 w-4 mr-2" /> {t("common.suspend")}
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => handleAction("delete", user)} className="text-destructive">
+                              <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
