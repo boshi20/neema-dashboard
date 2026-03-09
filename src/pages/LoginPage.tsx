@@ -51,10 +51,9 @@ const LoginPage = () => {
       <Card className="w-full max-w-md animate-scale-in relative">
         <CardHeader className="text-center space-y-4 pb-2">
           <div className="mx-auto">
-            <img src="/logo.png" alt="Neema" className="h-16 w-auto" />
+            <img src="/logo.png" alt="Neema" className="h-28 w-auto" />
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold">Neema</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">{t("login.subtitle")}</p>
           </div>
         </CardHeader>
