@@ -109,6 +109,7 @@ const AdminRestaurantsPage = () => {
                   <TableHead>{t("admin.totalOrdersCol")}</TableHead>
                   <TableHead>{t("admin.revenue")}</TableHead>
                   <TableHead>{t("common.status")}</TableHead>
+                  <TableHead className="w-[80px]">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
