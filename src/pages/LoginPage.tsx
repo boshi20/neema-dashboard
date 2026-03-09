@@ -67,7 +67,7 @@ const LoginPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="restaurant@saveplate.com"
+                placeholder="restaurant@neema.com"
                 className="h-11 glass-subtle"
                 required
               />

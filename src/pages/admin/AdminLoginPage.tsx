@@ -66,7 +66,7 @@ const AdminLoginPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@saveplate.com"
+                placeholder="admin@neema.com"
                 className="h-11 glass-subtle"
                 required
               />
