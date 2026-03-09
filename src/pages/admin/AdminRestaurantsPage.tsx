@@ -11,11 +11,20 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search, Store } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Store, MoreVertical, Edit, Ban, CheckCircle, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import OmrSymbol from "@/components/OmrSymbol";
-import { mockRestaurants } from "@/data/adminMockData";
+import { mockRestaurants, type Restaurant } from "@/data/adminMockData";
+import { toast } from "@/hooks/use-toast";
 
 const AdminRestaurantsPage = () => {
   const { t } = useTranslation();
@@ -23,6 +32,31 @@ const AdminRestaurantsPage = () => {
   const isAr = currentLanguage === "ar";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dialogState, setDialogState] = useState<{ open: boolean; action: string; restaurant: Restaurant | null }>({
+    open: false, action: "", restaurant: null,
+  });
+
+  const handleAction = (action: string, restaurant: Restaurant) => {
+    setDialogState({ open: true, action, restaurant });
+  };
+
+  const confirmAction = () => {
+    const { action, restaurant } = dialogState;
+    if (!restaurant) return;
+
+    const actionMessages: Record<string, string> = {
+      approve: `${restaurant.name} approved`,
+      suspend: `${restaurant.name} suspended`,
+      delete: `${restaurant.name} deleted`,
+      edit: `${restaurant.name} details saved`,
+    };
+
+    toast({
+      title: t("common.success"),
+      description: actionMessages[action] || "Action completed",
+    });
+    setDialogState({ open: false, action: "", restaurant: null });
+  };
 
   const statuses = ["all", "active", "pending", "suspended"];
 
@@ -75,6 +109,7 @@ const AdminRestaurantsPage = () => {
                   <TableHead>{t("admin.totalOrdersCol")}</TableHead>
                   <TableHead>{t("admin.revenue")}</TableHead>
                   <TableHead>{t("common.status")}</TableHead>
+                  <TableHead className="w-[80px]">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -109,6 +144,31 @@ const AdminRestaurantsPage = () => {
                           {t(`admin.status.${r.status}`)}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleAction("edit", r)}>
+                              <Edit className="h-4 w-4 mr-2" /> {t("common.edit")}
+                            </DropdownMenuItem>
+                            {r.status === "pending" && (
+                              <DropdownMenuItem onClick={() => handleAction("approve", r)}>
+                                <CheckCircle className="h-4 w-4 mr-2" /> {t("common.approve")}
+                              </DropdownMenuItem>
+                            )}
+                            {r.status !== "suspended" && (
+                              <DropdownMenuItem onClick={() => handleAction("suspend", r)}>
+                                <Ban className="h-4 w-4 mr-2" /> {t("common.suspend")}
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => handleAction("delete", r)} className="text-destructive">
+                              <Trash2 className="h-4 w-4 mr-2" /> {t("common.delete")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -116,6 +176,21 @@ const AdminRestaurantsPage = () => {
             </Table>
           </CardContent>
         </Card>
+
+        <AlertDialog open={dialogState.open} onOpenChange={(open) => setDialogState({ ...dialogState, open })}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t(`common.${dialogState.action}`)}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("common.confirmAction", { name: dialogState.restaurant?.name || "" })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmAction}>{t("common.confirm")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );

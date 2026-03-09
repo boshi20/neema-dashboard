@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -10,17 +11,49 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, MoreVertical, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import OmrSymbol from "@/components/OmrSymbol";
-import { mockPlatformOrders } from "@/data/adminMockData";
+import { mockPlatformOrders, type PlatformOrder } from "@/data/adminMockData";
+import { toast } from "@/hooks/use-toast";
 
 const AdminOrdersPage = () => {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dialogState, setDialogState] = useState<{ open: boolean; action: string; order: PlatformOrder | null }>({
+    open: false, action: "", order: null,
+  });
+
+  const handleAction = (action: string, order: PlatformOrder) => {
+    setDialogState({ open: true, action, order });
+  };
+
+  const confirmAction = () => {
+    const { action, order } = dialogState;
+    if (!order) return;
+
+    const actionMessages: Record<string, string> = {
+      cancel: `Order ${order.id} cancelled`,
+      confirm: `Order ${order.id} confirmed`,
+    };
+
+    toast({
+      title: t("common.success"),
+      description: actionMessages[action] || "Action completed",
+    });
+    setDialogState({ open: false, action: "", order: null });
+  };
 
   const statuses = ["all", "pending", "confirmed", "picked_up", "cancelled"];
 
@@ -84,6 +117,7 @@ const AdminOrdersPage = () => {
                   <TableHead>{t("orders.total")}</TableHead>
                   <TableHead>{t("orders.status")}</TableHead>
                   <TableHead>{t("orders.date")}</TableHead>
+                  <TableHead className="w-[80px]">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -109,6 +143,25 @@ const AdminOrdersPage = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>{order.date}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {order.status === "pending" && (
+                              <DropdownMenuItem onClick={() => handleAction("confirm", order)}>
+                                <CheckCircle className="h-4 w-4 mr-2" /> {t("common.confirm")}
+                              </DropdownMenuItem>
+                            )}
+                            {order.status !== "cancelled" && order.status !== "picked_up" && (
+                              <DropdownMenuItem onClick={() => handleAction("cancel", order)} className="text-destructive">
+                                <XCircle className="h-4 w-4 mr-2" /> {t("common.cancel")}
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -116,6 +169,21 @@ const AdminOrdersPage = () => {
             </Table>
           </CardContent>
         </Card>
+
+        <AlertDialog open={dialogState.open} onOpenChange={(open) => setDialogState({ ...dialogState, open })}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t(`common.${dialogState.action}`)}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("common.confirmAction", { name: dialogState.order?.id || "" })}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmAction}>{t("common.confirm")}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );

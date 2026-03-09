@@ -17,7 +17,12 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRestaurantsPage from "./pages/admin/AdminRestaurantsPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminPaymentsPage from "./pages/admin/AdminPaymentsPage";
+import AdminContentPage from "./pages/admin/AdminContentPage";
+import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import "./i18n";
 import "./i18n";
 
 const queryClient = new QueryClient();
@@ -54,7 +59,11 @@ const AppRoutes = () => {
       <Route path="/admin/restaurants" element={<ProtectedAdminRoute><AdminRestaurantsPage /></ProtectedAdminRoute>} />
       <Route path="/admin/orders" element={<ProtectedAdminRoute><AdminOrdersPage /></ProtectedAdminRoute>} />
       <Route path="/admin/users" element={<ProtectedAdminRoute><AdminUsersPage /></ProtectedAdminRoute>} />
+      <Route path="/admin/payments" element={<ProtectedAdminRoute><AdminPaymentsPage /></ProtectedAdminRoute>} />
+      <Route path="/admin/content" element={<ProtectedAdminRoute><AdminContentPage /></ProtectedAdminRoute>} />
+      <Route path="/admin/reports" element={<ProtectedAdminRoute><AdminReportsPage /></ProtectedAdminRoute>} />
       <Route path="/admin/analytics" element={<ProtectedAdminRoute><AdminAnalyticsPage /></ProtectedAdminRoute>} />
+      <Route path="/admin/settings" element={<ProtectedAdminRoute><AdminSettingsPage /></ProtectedAdminRoute>} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>

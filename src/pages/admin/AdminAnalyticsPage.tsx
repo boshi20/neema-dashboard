@@ -5,6 +5,7 @@ import { TrendingUp, DollarSign, Store, ShoppingBag } from "lucide-react";
 import OmrSymbol from "@/components/OmrSymbol";
 import { cn } from "@/lib/utils";
 import { mockRestaurants, mockPlatformOrders } from "@/data/adminMockData";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const AdminAnalyticsPage = () => {
   const { t } = useTranslation();
@@ -24,6 +25,25 @@ const AdminAnalyticsPage = () => {
   const topRestaurants = [...mockRestaurants]
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
+
+  // Revenue trend data (last 7 days)
+  const revenueData = [
+    { date: "Mar 2", revenue: 320, orders: 18 },
+    { date: "Mar 3", revenue: 425, orders: 24 },
+    { date: "Mar 4", revenue: 380, orders: 21 },
+    { date: "Mar 5", revenue: 510, orders: 29 },
+    { date: "Mar 6", revenue: 445, orders: 26 },
+    { date: "Mar 7", revenue: 590, orders: 34 },
+    { date: "Mar 8", revenue: 680, orders: 39 },
+  ];
+
+  // Orders by status
+  const orderStatusData = [
+    { status: "Pending", count: mockPlatformOrders.filter(o => o.status === "pending").length },
+    { status: "Confirmed", count: mockPlatformOrders.filter(o => o.status === "confirmed").length },
+    { status: "Picked Up", count: mockPlatformOrders.filter(o => o.status === "picked_up").length },
+    { status: "Cancelled", count: mockPlatformOrders.filter(o => o.status === "cancelled").length },
+  ];
 
   return (
     <AdminLayout>
@@ -76,6 +96,54 @@ const AdminAnalyticsPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="animate-slide-up" style={{ animationDelay: "400ms", animationFillMode: "both" }}>
+            <CardHeader>
+              <CardTitle>{t("admin.revenueOverTime")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="date" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: "hsl(var(--card))", 
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px"
+                    }}
+                  />
+                  <Line type="monotone" dataKey="revenue" stroke="hsl(var(--chart-1))" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="animate-slide-up" style={{ animationDelay: "480ms", animationFillMode: "both" }}>
+            <CardHeader>
+              <CardTitle>{t("admin.ordersByStatus")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={orderStatusData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="status" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: "hsl(var(--card))", 
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px"
+                    }}
+                  />
+                  <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AdminLayout>
   );
