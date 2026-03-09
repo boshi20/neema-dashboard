@@ -117,6 +117,7 @@ const AdminOrdersPage = () => {
                   <TableHead>{t("orders.total")}</TableHead>
                   <TableHead>{t("orders.status")}</TableHead>
                   <TableHead>{t("orders.date")}</TableHead>
+                  <TableHead className="w-[80px]">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
