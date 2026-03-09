@@ -110,6 +110,7 @@ const AdminUsersPage = () => {
                   <TableHead>{t("admin.totalOrdersCol")}</TableHead>
                   <TableHead>{t("admin.joinedDate")}</TableHead>
                   <TableHead>{t("common.status")}</TableHead>
+                  <TableHead className="w-[80px]">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
