@@ -40,7 +40,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { path: "/admin/restaurants", icon: Store, label: t("admin.restaurants") },
     { path: "/admin/orders", icon: ShoppingBag, label: t("admin.orders") },
     { path: "/admin/users", icon: Users, label: t("admin.users") },
+    { path: "/admin/payments", icon: CreditCard, label: t("admin.payments") },
+    { path: "/admin/content", icon: FileText, label: t("admin.content") },
+    { path: "/admin/reports", icon: AlertTriangle, label: t("admin.reports") },
     { path: "/admin/analytics", icon: BarChart3, label: t("admin.analytics") },
+    { path: "/admin/settings", icon: Settings, label: t("admin.systemSettings") },
   ];
 
   return (
