@@ -50,8 +50,8 @@ const LoginPage = () => {
 
       <Card className="w-full max-w-md animate-scale-in relative">
         <CardHeader className="text-center space-y-4 pb-2">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl gradient-primary shadow-glow">
-            <UtensilsCrossed className="h-7 w-7 text-primary-foreground" />
+          <div className="mx-auto">
+            <img src="/logo.png" alt="Neema" className="h-16 w-auto" />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">Neema</CardTitle>
