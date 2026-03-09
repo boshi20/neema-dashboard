@@ -28,6 +28,11 @@ export const en = {
     confirm: "Confirm",
     back: "Back",
     uploadImage: "Upload Image",
+    success: "Success",
+    approve: "Approve",
+    suspend: "Suspend",
+    resetPassword: "Reset Password",
+    confirmAction: "Are you sure you want to perform this action on {{name}}?",
   },
   login: {
     subtitle: "Sign in to your restaurant dashboard",
