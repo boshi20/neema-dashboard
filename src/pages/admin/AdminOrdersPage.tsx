@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import AdminLayout from "@/components/AdminLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -10,11 +11,20 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Search } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, MoreVertical, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import OmrSymbol from "@/components/OmrSymbol";
-import { mockPlatformOrders } from "@/data/adminMockData";
+import { mockPlatformOrders, type PlatformOrder } from "@/data/adminMockData";
+import { toast } from "@/hooks/use-toast";
 
 const AdminOrdersPage = () => {
   const { t } = useTranslation();
