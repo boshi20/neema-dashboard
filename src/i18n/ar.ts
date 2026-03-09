@@ -170,6 +170,12 @@ export const ar = {
     topRestaurants: "أفضل المطاعم حسب الإيرادات",
     ordersLabel: "طلب",
     restaurantView: "عرض المطعم",
+    revenueOverTime: "الإيرادات بمرور الوقت",
+    ordersByStatus: "الطلبات حسب الحالة",
+    payments: "المدفوعات",
+    content: "المحتوى",
+    reports: "البلاغات",
+    systemSettings: "الإعدادات",
     status: {
       active: "نشط",
       pending: "قيد الانتظار",
