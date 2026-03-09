@@ -14,6 +14,10 @@ import {
   X,
   LogOut,
   Shield,
+  CreditCard,
+  FileText,
+  AlertTriangle,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
