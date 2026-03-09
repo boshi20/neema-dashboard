@@ -175,8 +175,8 @@ const AppPreviewDetail = () => {
         </Card>
       </div>
 
-      {/* Sticky Footer */}
-      <div className="fixed bottom-16 left-0 right-0 glass border-t border-border/40 backdrop-blur-lg p-4">
+      {/* Sticky Footer - Cleaner */}
+      <div className="fixed bottom-16 left-0 right-0 bg-card border-t border-border backdrop-blur-lg p-4 shadow-lg">
         <div className="max-w-md mx-auto flex items-center gap-4">
           <div className="flex-1">
             <div className="text-sm text-muted-foreground">Total</div>
