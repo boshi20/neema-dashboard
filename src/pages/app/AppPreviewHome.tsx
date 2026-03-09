@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import MealCard from "@/components/app/MealCard";
+import ImpactBanner from "@/components/app/ImpactBanner";
+import TimeFilter from "@/components/app/TimeFilter";
 import { mockMeals } from "@/data/mockData";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
