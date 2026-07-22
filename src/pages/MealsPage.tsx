@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import OmrSymbol from "@/components/OmrSymbol";
 import { useTranslation } from "react-i18next";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,36 +16,90 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Clock, Pencil, Trash2 } from "lucide-react";
-import { mockMeals } from "@/data/mockData";
+import { Plus, Search, Clock, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Meal } from "@/types/meal";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import ImageUpload from "@/components/ImageUpload";
+import {
+  createMeal,
+  deleteMeal,
+  listMeals,
+  setMealAvailability,
+  updateMeal,
+  uploadImage,
+  type MealInput,
+} from "@/lib/api";
+
+function todayLocal(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+const emptyForm = () => ({
+  name: "", nameAr: "", description: "", descriptionAr: "", originalPrice: "", discountedPrice: "",
+  quantity: "", category: "mainCourse", pickupDate: todayLocal(), pickupFrom: "", pickupTo: "", image: "",
+});
 
 const MealsPage = () => {
   const { t } = useTranslation();
   const { isRTL, currentLanguage } = useLanguage();
   const isAr = currentLanguage === "ar";
   const { toast } = useToast();
-  const [meals, setMeals] = useState<Meal[]>(() => {
-    const saved = localStorage.getItem("saveplate_meals");
-    return saved ? JSON.parse(saved) : mockMeals;
-  });
-
-
-  useEffect(() => {
-    localStorage.setItem("saveplate_meals", JSON.stringify(meals));
-  }, [meals]);
+  const { restaurant, session } = useAuth();
+  const queryClient = useQueryClient();
+  const restaurantId = restaurant?.id;
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
-  const [form, setForm] = useState({
-    name: "", nameAr: "", description: "", descriptionAr: "", originalPrice: "", discountedPrice: "",
-    quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "", image: "",
+  const [form, setForm] = useState(emptyForm());
+
+  const { data: meals = [], isLoading } = useQuery({
+    queryKey: ["meals", restaurantId],
+    queryFn: () => listMeals(restaurantId!),
+    enabled: Boolean(restaurantId),
+  });
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["meals", restaurantId] });
+
+  const onError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    toast({ title: t("common.noResults"), description: message, variant: "destructive" });
+  };
+
+  const saveMutation = useMutation({
+    mutationFn: async (input: MealInput) => {
+      if (editingMeal) return updateMeal(editingMeal.id, input);
+      return createMeal(restaurantId!, input);
+    },
+    onSuccess: () => {
+      toast({ title: editingMeal ? t("meals.editMeal") : t("meals.addMeal"), description: form.name });
+      setDialogOpen(false);
+      void invalidate();
+    },
+    onError,
+  });
+
+  const toggleMutation = useMutation({
+    mutationFn: ({ id, available }: { id: string; available: boolean }) =>
+      setMealAvailability(id, available),
+    onSuccess: () => void invalidate(),
+    onError,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteMeal(id),
+    onSuccess: () => {
+      toast({ title: t("meals.deleteMeal"), variant: "destructive" });
+      void invalidate();
+    },
+    onError,
   });
 
   const categories = [
@@ -65,10 +120,7 @@ const MealsPage = () => {
 
   const openAdd = () => {
     setEditingMeal(null);
-    setForm({
-      name: "", nameAr: "", description: "", descriptionAr: "", originalPrice: "", discountedPrice: "",
-      quantity: "", category: "mainCourse", pickupFrom: "", pickupTo: "", image: "",
-    });
+    setForm(emptyForm());
     setDialogOpen(true);
   };
 
@@ -78,47 +130,40 @@ const MealsPage = () => {
       name: meal.name, nameAr: meal.nameAr, description: meal.description, descriptionAr: meal.descriptionAr,
       originalPrice: String(meal.originalPrice), discountedPrice: String(meal.discountedPrice),
       quantity: String(meal.quantity), category: meal.category,
+      pickupDate: meal.pickupDate || todayLocal(),
       pickupFrom: meal.pickupFrom, pickupTo: meal.pickupTo, image: meal.image,
     });
     setDialogOpen(true);
   };
 
+  const canSave =
+    Boolean(restaurantId) &&
+    form.name.trim().length >= 2 &&
+    Number(form.originalPrice) > 0 &&
+    Number(form.discountedPrice) > 0 &&
+    Number(form.discountedPrice) <= Number(form.originalPrice) &&
+    Number(form.quantity) > 0 &&
+    Boolean(form.pickupDate) &&
+    Boolean(form.pickupFrom) &&
+    Boolean(form.pickupTo) &&
+    !saveMutation.isPending;
+
   const handleSave = () => {
-    if (!form.name || !form.originalPrice || !form.discountedPrice) return;
-    if (editingMeal) {
-      setMeals((prev) =>
-        prev.map((m) =>
-          m.id === editingMeal.id
-            ? { ...m, name: form.name, nameAr: form.nameAr, description: form.description, descriptionAr: form.descriptionAr,
-                originalPrice: Number(form.originalPrice), discountedPrice: Number(form.discountedPrice),
-                quantity: Number(form.quantity), category: form.category,
-                pickupFrom: form.pickupFrom, pickupTo: form.pickupTo, image: form.image }
-            : m
-        )
-      );
-      toast({ title: t("meals.editMeal"), description: form.name });
-    } else {
-      const newMeal: Meal = {
-        id: String(Date.now()), name: form.name, nameAr: form.nameAr,
-        description: form.description, descriptionAr: form.descriptionAr,
-        originalPrice: Number(form.originalPrice), discountedPrice: Number(form.discountedPrice),
-        quantity: Number(form.quantity), availableQuantity: Number(form.quantity),
-        category: form.category, image: form.image, available: true,
-        pickupFrom: form.pickupFrom, pickupTo: form.pickupTo,
-        createdAt: new Date().toISOString().split("T")[0],
-      };
-      setMeals((prev) => [newMeal, ...prev]);
-      toast({ title: t("meals.addMeal"), description: form.name });
-    }
-    setDialogOpen(false);
-  };
-
-  const toggleAvailability = (id: string) =>
-    setMeals((prev) => prev.map((m) => (m.id === id ? { ...m, available: !m.available } : m)));
-
-  const deleteMeal = (id: string) => {
-    setMeals((prev) => prev.filter((m) => m.id !== id));
-    toast({ title: t("meals.deleteMeal"), variant: "destructive" });
+    if (!canSave) return;
+    saveMutation.mutate({
+      name: form.name.trim(),
+      nameAr: form.nameAr.trim(),
+      description: form.description.trim(),
+      descriptionAr: form.descriptionAr.trim(),
+      originalPrice: Number(form.originalPrice),
+      discountedPrice: Number(form.discountedPrice),
+      quantity: Number(form.quantity),
+      category: form.category,
+      image: form.image,
+      pickupDate: form.pickupDate,
+      pickupFrom: form.pickupFrom,
+      pickupTo: form.pickupTo,
+    });
   };
 
   return (
@@ -147,7 +192,11 @@ const MealsPage = () => {
           </Select>
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground">{t("meals.noMeals")}</div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -176,21 +225,30 @@ const MealsPage = () => {
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
-                    {meal.pickupFrom} - {meal.pickupTo}
+                    {meal.pickupDate} · {meal.pickupFrom} - {meal.pickupTo}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {t("meals.availableQuantity")}: {meal.availableQuantity}
                   </div>
                   <div className="flex items-center justify-between border-t border-border pt-3">
                     <div className="flex items-center gap-2">
-                      <Switch checked={meal.available} onCheckedChange={() => toggleAvailability(meal.id)} />
+                      <Switch
+                        checked={meal.available}
+                        disabled={toggleMutation.isPending}
+                        onCheckedChange={(checked) => toggleMutation.mutate({ id: meal.id, available: checked })}
+                      />
                       <span className="text-xs text-muted-foreground">{t("meals.availability")}</span>
                     </div>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(meal)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => deleteMeal(meal.id)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={deleteMutation.isPending}
+                        onClick={() => deleteMutation.mutate(meal.id)}
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -210,6 +268,7 @@ const MealsPage = () => {
               <ImageUpload
                 value={form.image}
                 onChange={(url) => setForm({ ...form, image: url })}
+                onUpload={session ? (file) => uploadImage(file, session.user.id) : undefined}
                 label={t("meals.mealPhoto")}
               />
               <div className="grid gap-2">
@@ -255,6 +314,10 @@ const MealsPage = () => {
                   </Select>
                 </div>
               </div>
+              <div className="grid gap-2">
+                <Label>{t("meals.pickupDate")}</Label>
+                <Input type="date" value={form.pickupDate} onChange={(e) => setForm({ ...form, pickupDate: e.target.value })} />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label>{t("meals.pickupFrom")}</Label>
@@ -282,7 +345,9 @@ const MealsPage = () => {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{t("common.cancel")}</Button>
-              <Button onClick={handleSave}>{t("common.save")}</Button>
+              <Button onClick={handleSave} disabled={!canSave}>
+                {saveMutation.isPending ? t("common.loading") : t("common.save")}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

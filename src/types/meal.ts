@@ -11,6 +11,7 @@ export interface Meal {
   category: string;
   image: string;
   available: boolean;
+  pickupDate: string;
   pickupFrom: string;
   pickupTo: string;
   createdAt: string;

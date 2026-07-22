@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import OmrSymbol from "@/components/OmrSymbol";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,23 +14,42 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { mockMeals, mockOrders } from "@/data/mockData";
+import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { cn } from "@/lib/utils";
+import { listMeals, listOrders } from "@/lib/api";
 
 const Index = () => {
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
+  const { isRTL, currentLanguage } = useLanguage();
+  const isAr = currentLanguage === "ar";
   const navigate = useNavigate();
+  const { restaurant } = useAuth();
+  const restaurantId = restaurant?.id;
 
-  const activeMeals = mockMeals.filter((m) => m.available).length;
-  const todayOrders = mockOrders.filter((o) => o.date === "2026-03-08").length;
-  const totalSaved = mockMeals.reduce((sum, m) => sum + (m.quantity - m.availableQuantity), 0);
+  const { data: meals = [] } = useQuery({
+    queryKey: ["meals", restaurantId],
+    queryFn: () => listMeals(restaurantId!),
+    enabled: Boolean(restaurantId),
+  });
+
+  const { data: orders = [] } = useQuery({
+    queryKey: ["orders", restaurantId],
+    queryFn: () => listOrders(restaurantId!),
+    enabled: Boolean(restaurantId),
+  });
+
+  const todayKey = new Date().toDateString();
+  const activeMeals = meals.filter((m) => m.available).length;
+  const todayOrders = orders.filter(
+    (o) => new Date(o.createdAt).toDateString() === todayKey
+  ).length;
+  const totalSaved = orders.filter((o) => o.status === "picked_up").length;
 
   const stats = [
     {
       title: t("dashboard.totalMeals"),
-      value: mockMeals.length,
+      value: meals.length,
       icon: UtensilsCrossed,
       bgClass: "bg-primary/10",
       iconClass: "text-primary",
@@ -58,10 +78,26 @@ const Index = () => {
   ];
 
   const statusColors: Record<string, string> = {
-    pending: "bg-chart-5/15 text-chart-5 border-chart-5/20",
+    pending_payment: "bg-chart-5/15 text-chart-5 border-chart-5/20",
     confirmed: "bg-primary/15 text-primary border-primary/20",
+    ready_for_pickup: "bg-chart-1/15 text-chart-1 border-chart-1/20",
     picked_up: "bg-chart-2/15 text-chart-2 border-chart-2/20",
-    cancelled: "bg-destructive/15 text-destructive border-destructive/20",
+    cancelled_by_user: "bg-destructive/15 text-destructive border-destructive/20",
+    cancelled_by_restaurant: "bg-destructive/15 text-destructive border-destructive/20",
+    expired: "bg-muted text-muted-foreground border-border",
+  };
+
+  const statusLabel = (s: string) => {
+    const map: Record<string, string> = {
+      pending_payment: t("orders.pending"),
+      confirmed: t("orders.confirmed"),
+      ready_for_pickup: t("orders.readyForPickup"),
+      picked_up: t("orders.pickedUp"),
+      cancelled_by_user: t("orders.cancelled"),
+      cancelled_by_restaurant: t("orders.cancelled"),
+      expired: t("orders.expired"),
+    };
+    return map[s] || s;
   };
 
   return (
@@ -72,7 +108,7 @@ const Index = () => {
           <h1 className="text-3xl font-bold text-foreground">
             {t("dashboard.welcome")} 👋
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="mt-1 text-muted-foreground">
             {t("dashboard.mealsOverview")}
           </p>
         </div>
@@ -80,9 +116,9 @@ const Index = () => {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
-            <Card key={stat.title} className="animate-slide-up" style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}>
+            <Card key={stat.title} className="animate-scale-in" style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}>
               <CardContent className="flex items-center gap-4 p-5">
-                <div className={cn("rounded-xl p-3", stat.bgClass)}>
+                <div className={cn("flex h-12 w-12 items-center justify-center rounded-xl", stat.bgClass)}>
                   <stat.icon className={cn("h-6 w-6", stat.iconClass)} />
                 </div>
                 <div>
@@ -97,66 +133,65 @@ const Index = () => {
         {/* Quick Actions & Recent Orders */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Quick Actions */}
-          <Card className="animate-slide-up" style={{ animationDelay: "320ms", animationFillMode: "both" }}>
+          <Card>
             <CardHeader>
-              <CardTitle>{t("dashboard.quickActions")}</CardTitle>
+              <CardTitle className="text-base">{t("dashboard.quickActions")}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="flex flex-col gap-3">
               <Button
-                className="w-full justify-start gap-3 h-12 gradient-primary shadow-glow hover:opacity-90 transition-opacity"
+                className="justify-start gap-2 gradient-primary shadow-glow hover:opacity-90 transition-opacity"
                 onClick={() => navigate("/meals")}
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4" />
                 {t("dashboard.addNewMeal")}
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3 h-12 glass-subtle hover:bg-accent/60"
+                className="justify-start gap-2"
                 onClick={() => navigate("/orders")}
               >
-                <ShoppingBag className="h-5 w-5" />
+                <ShoppingBag className="h-4 w-4" />
                 {t("dashboard.viewOrders")}
               </Button>
             </CardContent>
           </Card>
 
           {/* Recent Orders */}
-          <Card className="animate-slide-up" style={{ animationDelay: "400ms", animationFillMode: "both" }}>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{t("orders.title")}</CardTitle>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardTitle className="text-base">{t("orders.title")}</CardTitle>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => navigate("/orders")}
                 className="text-primary hover:text-primary/80"
               >
                 <ArrowRight className={cn("h-4 w-4", isRTL && "rotate-180")} />
               </Button>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {mockOrders.slice(0, 3).map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between rounded-xl glass-subtle p-3 transition-all duration-200 hover:bg-accent/40"
-                  >
+            <CardContent className="space-y-3">
+              {orders.length === 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">{t("orders.noOrders")}</p>
+              ) : (
+                orders.slice(0, 3).map((order) => (
+                  <div key={order.id} className="flex items-center justify-between rounded-xl border border-border/60 p-3">
                     <div>
                       <p className="text-sm font-medium text-foreground">
-                        {order.customerName}
+                        {isAr && order.mealNameAr ? order.mealNameAr : order.mealName}
                       </p>
-                      <p className="text-xs text-muted-foreground">{order.id}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{order.id.slice(0, 8).toUpperCase()}</p>
                     </div>
-                    <div className={cn("flex items-center gap-2", isRTL && "flex-row-reverse")}>
-                      <span className="text-sm font-semibold text-foreground">
-                        <span className="inline-flex items-center gap-1"><OmrSymbol size={13} /> {order.total}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex items-center gap-1 text-sm font-semibold">
+                        <OmrSymbol size={12} /> {order.total}
                       </span>
-                      <Badge className={cn("border", statusColors[order.status])} variant="secondary">
-                        {t(`orders.${order.status === "picked_up" ? "pickedUp" : order.status}`)}
+                      <Badge className={statusColors[order.status] ?? ""} variant="outline">
+                        {statusLabel(order.status)}
                       </Badge>
                     </div>
                   </div>
-                ))}
-              </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </div>
