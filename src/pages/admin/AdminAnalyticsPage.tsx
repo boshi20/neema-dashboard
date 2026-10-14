@@ -1,153 +1,507 @@
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AdminLayout from "@/components/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, DollarSign, Store, ShoppingBag } from "lucide-react";
-import OmrSymbol from "@/components/OmrSymbol";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
+  ArrowRight,
+  Leaf,
+  Percent,
+  ShoppingBag,
+  Store,
+  UserPlus,
+  Wallet,
+} from "lucide-react";
+import { AdminShell } from "@/components/admin/AdminShell";
+import {
+  PageHeader,
+  DateRangeSelector,
+  KpiCard,
+  MoneyValue,
+  EmptyState,
+  KpiSkeleton,
+  ChartSkeleton,
+} from "@/components/patterns";
+import { Button } from "@/components/ui/button";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { useLanguage } from "@/hooks/useLanguage";
 import { cn } from "@/lib/utils";
-import { mockRestaurants, mockPlatformOrders } from "@/data/adminMockData";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  formatCount,
+  formatKg,
+  formatOmr,
+  parseDateInputValue,
+  percentChange,
+  resolveRange,
+  toDateInputValue,
+  type AnalyticsRange,
+  type DateRangePreset,
+} from "@/lib/analytics";
+import { fetchPlatformAnalytics, type PlatformAnalytics } from "@/lib/adminApi";
+
+type ChartMetric = "reservations" | "foodRescued" | "revenue";
 
 const AdminAnalyticsPage = () => {
   const { t } = useTranslation();
+  const { currentLanguage, isRTL } = useLanguage();
+  const isAr = currentLanguage === "ar";
+  const navigate = useNavigate();
 
-  const totalRevenue = mockRestaurants.reduce((s, r) => s + r.revenue, 0);
-  const totalOrders = mockPlatformOrders.length;
-  const avgOrderValue = Math.round(totalRevenue / totalOrders);
+  const [preset, setPreset] = useState<DateRangePreset>("last30");
+  const [customFrom, setCustomFrom] = useState(() =>
+    toDateInputValue(resolveRange("last30").from)
+  );
+  const [customTo, setCustomTo] = useState(() => toDateInputValue(new Date()));
+  const [metric, setMetric] = useState<ChartMetric>("reservations");
+  const [rangeOpen, setRangeOpen] = useState(false);
 
-  const stats = [
-    { title: t("admin.platformRevenue"), value: totalRevenue.toLocaleString(), icon: DollarSign, bgClass: "bg-chart-1/10", iconClass: "text-chart-1", showOmr: true },
-    { title: t("admin.totalOrders"), value: totalOrders, icon: ShoppingBag, bgClass: "bg-chart-2/10", iconClass: "text-chart-2" },
-    { title: t("admin.avgOrderValue"), value: avgOrderValue, icon: TrendingUp, bgClass: "bg-chart-3/10", iconClass: "text-chart-3", showOmr: true },
-    { title: t("admin.totalRestaurants"), value: mockRestaurants.length, icon: Store, bgClass: "bg-primary/10", iconClass: "text-primary" },
+  const range: AnalyticsRange = useMemo(() => {
+    if (preset !== "custom") return resolveRange(preset);
+    const from = parseDateInputValue(customFrom);
+    const to = parseDateInputValue(customTo);
+    if (!from || !to) return resolveRange("last30");
+    return resolveRange("custom", { from, to: to < from ? from : to });
+  }, [preset, customFrom, customTo]);
+
+  const rangeKey = `${range.from.toISOString()}|${range.to.toISOString()}`;
+
+  const { data, isPending, isError, refetch, isFetching } =
+    useQuery<PlatformAnalytics>({
+      queryKey: ["admin-analytics", rangeKey],
+      queryFn: () => fetchPlatformAnalytics(range),
+      staleTime: 60_000,
+    });
+
+  const chartConfig = {
+    reservations: {
+      label: t("analytics.metricReservations"),
+      color: "hsl(var(--chart-1))",
+    },
+    foodRescued: {
+      label: t("analytics.metricFoodRescued"),
+      color: "hsl(var(--chart-2))",
+    },
+    revenue: {
+      label: t("analytics.metricRevenue"),
+      color: "hsl(var(--chart-3))",
+    },
+  } satisfies ChartConfig;
+
+  const bucketLabel = (bucket: string) => {
+    const date = parseDateInputValue(bucket);
+    if (!date) return bucket;
+    return date.toLocaleDateString(isAr ? "ar-OM-u-nu-latn" : "en-OM", {
+      day: "2-digit",
+      month: "short",
+    });
+  };
+
+  const dateSelector = (
+    <DateRangeSelector
+      preset={preset}
+      onPresetChange={setPreset}
+      customFrom={customFrom}
+      customTo={customTo}
+      onCustomFromChange={setCustomFrom}
+      onCustomToChange={setCustomTo}
+      open={rangeOpen}
+      onOpenChange={setRangeOpen}
+    />
+  );
+
+  if (isPending) {
+    return (
+      <AdminShell title={t("admin.analytics")}>
+        <div className="space-y-8">
+          <PageHeader
+            title={t("admin.analytics")}
+            description={t("admin.analyticsSubtitle")}
+            actions={dateSelector}
+          />
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <KpiSkeleton key={i} />
+            ))}
+          </div>
+          <ChartSkeleton />
+        </div>
+      </AdminShell>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <AdminShell title={t("admin.analytics")}>
+        <div className="space-y-8">
+          <PageHeader
+            title={t("admin.analytics")}
+            description={t("admin.analyticsSubtitle")}
+            actions={dateSelector}
+          />
+          <EmptyState
+            title={t("analytics.errorTitle")}
+            actionLabel={t("analytics.retry")}
+            onAction={() => void refetch()}
+          />
+        </div>
+      </AdminShell>
+    );
+  }
+
+  const { totals, previous, series, topRestaurants } = data;
+
+  if (!data.hasAnyData) {
+    return (
+      <AdminShell title={t("admin.analytics")}>
+        <div className="space-y-8">
+          <PageHeader
+            title={t("admin.analytics")}
+            description={t("admin.analyticsSubtitle")}
+            actions={dateSelector}
+          />
+          <EmptyState
+            icon={ShoppingBag}
+            title={t("admin.analyticsEmptyTitle")}
+            description={t("admin.analyticsEmptyBody")}
+          />
+        </div>
+      </AdminShell>
+    );
+  }
+
+  const hasPeriodActivity = totals.reservations > 0;
+  const isRevenueMetric = metric === "revenue";
+
+  const orderBreakdown = [
+    {
+      key: "completed",
+      label: t("analytics.completed"),
+      value: totals.completed,
+      barClass: "bg-emerald-500",
+    },
+    {
+      key: "pending",
+      label: t("analytics.pending"),
+      value: totals.pending,
+      barClass: "bg-amber-500",
+    },
+    {
+      key: "cancelled",
+      label: t("analytics.cancelled"),
+      value: totals.cancelled,
+      barClass: "bg-red-500",
+    },
+    {
+      key: "expired",
+      label: t("analytics.expired"),
+      value: totals.expired,
+      barClass: "bg-slate-400",
+    },
   ];
-
-  // Top restaurants by revenue
-  const topRestaurants = [...mockRestaurants]
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 5);
-
-  // Revenue trend data (last 7 days)
-  const revenueData = [
-    { date: "Mar 2", revenue: 320, orders: 18 },
-    { date: "Mar 3", revenue: 425, orders: 24 },
-    { date: "Mar 4", revenue: 380, orders: 21 },
-    { date: "Mar 5", revenue: 510, orders: 29 },
-    { date: "Mar 6", revenue: 445, orders: 26 },
-    { date: "Mar 7", revenue: 590, orders: 34 },
-    { date: "Mar 8", revenue: 680, orders: 39 },
-  ];
-
-  // Orders by status
-  const orderStatusData = [
-    { status: "Pending", count: mockPlatformOrders.filter(o => o.status === "pending").length },
-    { status: "Confirmed", count: mockPlatformOrders.filter(o => o.status === "confirmed").length },
-    { status: "Picked Up", count: mockPlatformOrders.filter(o => o.status === "picked_up").length },
-    { status: "Cancelled", count: mockPlatformOrders.filter(o => o.status === "cancelled").length },
-  ];
+  const breakdownTotal = orderBreakdown.reduce((sum, row) => sum + row.value, 0);
 
   return (
-    <AdminLayout>
-      <div className="space-y-8">
-        <div className="animate-slide-up">
-          <h1 className="text-3xl font-bold text-foreground">{t("admin.platformAnalytics")}</h1>
-          <p className="text-muted-foreground mt-1">{t("admin.analyticsOverview")}</p>
+    <AdminShell title={t("admin.analytics")}>
+      <div className={cn("space-y-8", isFetching && "opacity-95 transition-opacity")}>
+        <PageHeader
+          title={t("admin.analytics")}
+          description={t("admin.analyticsSubtitle")}
+          actions={dateSelector}
+        />
+
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <KpiCard
+            label={t("analytics.revenue")}
+            value={<MoneyValue value={totals.revenue} size={16} />}
+            icon={Wallet}
+            iconBgClassName="bg-chart-1/15"
+            iconClassName="text-chart-1"
+            changePercent={percentChange(totals.revenue, previous?.revenue ?? 0)}
+            context={t("analytics.vsPrevious")}
+            noPreviousLabel={previous ? undefined : t("analytics.noPrevious")}
+          />
+          <KpiCard
+            label={t("analytics.reservations")}
+            value={formatCount(totals.reservations, currentLanguage)}
+            icon={ShoppingBag}
+            iconBgClassName="bg-chart-2/15"
+            iconClassName="text-chart-2"
+            changePercent={percentChange(totals.reservations, previous?.reservations ?? 0)}
+            context={t("analytics.vsPrevious")}
+            noPreviousLabel={previous ? undefined : t("analytics.noPrevious")}
+          />
+          <KpiCard
+            label={t("analytics.foodRescued")}
+            value={formatCount(totals.foodRescued, currentLanguage)}
+            icon={Leaf}
+            iconBgClassName="bg-chart-4/15"
+            iconClassName="text-chart-4"
+            changePercent={percentChange(totals.foodRescued, previous?.foodRescued ?? 0)}
+            context={t("analytics.vsPrevious")}
+            noPreviousLabel={previous ? undefined : t("analytics.noPrevious")}
+          />
+          <KpiCard
+            label={t("analytics.pickupRate")}
+            value={
+              totals.pickupRate == null
+                ? t("analytics.notEnoughData")
+                : `${formatCount(Math.round(totals.pickupRate), currentLanguage)}%`
+            }
+            icon={Percent}
+            iconBgClassName="bg-chart-3/15"
+            iconClassName="text-chart-3"
+            changePercent={
+              totals.pickupRate == null || previous?.pickupRate == null
+                ? null
+                : percentChange(totals.pickupRate, previous.pickupRate)
+            }
+            context={t("analytics.vsPrevious")}
+            noPreviousLabel={
+              totals.pickupRate == null || previous?.pickupRate == null
+                ? t("analytics.noPrevious")
+                : undefined
+            }
+          />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, i) => (
-            <Card key={stat.title} className="animate-slide-up" style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">{stat.title}</p>
-                    <p className="text-3xl font-bold text-foreground flex items-baseline gap-1.5">
-                      {"showOmr" in stat && stat.showOmr && <OmrSymbol size={20} />}
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={cn("rounded-xl p-3", stat.bgClass)}>
-                    <stat.icon className={cn("h-6 w-6", stat.iconClass)} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <KpiCard
+            label={t("admin.newUsers")}
+            value={formatCount(totals.newUsers, currentLanguage)}
+            icon={UserPlus}
+            noPreviousLabel={t("admin.duringPeriod")}
+          />
+          <KpiCard
+            label={t("admin.newRestaurants")}
+            value={formatCount(totals.newRestaurants, currentLanguage)}
+            icon={Store}
+            noPreviousLabel={t("admin.duringPeriod")}
+          />
         </div>
 
-        <Card className="animate-slide-up" style={{ animationDelay: "320ms", animationFillMode: "both" }}>
-          <CardHeader>
-            <CardTitle>{t("admin.topRestaurants")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {topRestaurants.map((r, i) => (
-                <div key={r.id} className="flex items-center gap-4">
-                  <span className="text-lg font-bold text-muted-foreground w-6">{i + 1}</span>
-                  <div className="h-10 w-10 rounded-xl bg-accent/50 flex items-center justify-center">
-                    <Store className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{r.name}</p>
-                    <p className="text-xs text-muted-foreground">{r.totalOrders} {t("admin.ordersLabel")} · {r.city}</p>
-                  </div>
-                  <span className="text-sm font-bold text-foreground inline-flex items-center gap-1">
-                    <OmrSymbol size={14} /> {r.revenue}
-                  </span>
-                </div>
+        <section className="space-y-4 rounded-xl border border-border/70 bg-card p-5 shadow-xs">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-section text-foreground">
+              {t("analytics.performanceOverview")}
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {(["reservations", "foodRescued", "revenue"] as ChartMetric[]).map((m) => (
+                <Button
+                  key={m}
+                  size="sm"
+                  variant={metric === m ? "default" : "outline"}
+                  onClick={() => setMetric(m)}
+                  className={cn(
+                    metric === m && "gradient-primary shadow-glow hover:opacity-90"
+                  )}
+                >
+                  {t(`analytics.metric${m.charAt(0).toUpperCase()}${m.slice(1)}`)}
+                </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="animate-slide-up" style={{ animationDelay: "400ms", animationFillMode: "both" }}>
-            <CardHeader>
-              <CardTitle>{t("admin.revenueOverTime")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="date" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: "hsl(var(--card))", 
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px"
-                    }}
+          {!hasPeriodActivity ? (
+            <div className="flex flex-col items-center gap-3 py-12 text-center">
+              <p className="text-sm font-medium text-foreground">
+                {t("analytics.noActivityTitle")}
+              </p>
+              <Button variant="outline" onClick={() => setRangeOpen(true)}>
+                {t("analytics.noActivityCta")}
+              </Button>
+            </div>
+          ) : (
+            <ChartContainer config={chartConfig} className="aspect-auto h-[280px] w-full">
+              {isRevenueMetric ? (
+                <BarChart data={series} margin={{ left: 4, right: 8, top: 8, bottom: 0 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="bucket"
+                    tickFormatter={bucketLabel}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                    reversed={isRTL}
                   />
-                  <Line type="monotone" dataKey="revenue" stroke="hsl(var(--chart-1))" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="animate-slide-up" style={{ animationDelay: "480ms", animationFillMode: "both" }}>
-            <CardHeader>
-              <CardTitle>{t("admin.ordersByStatus")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={orderStatusData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="status" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: "hsl(var(--card))", 
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px"
-                    }}
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    width={44}
+                    orientation={isRTL ? "right" : "left"}
                   />
-                  <Bar dataKey="count" fill="hsl(var(--chart-2))" radius={[8, 8, 0, 0]} />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent labelFormatter={(v) => bucketLabel(String(v))} />
+                    }
+                  />
+                  <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[6, 6, 0, 0]} />
                 </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+              ) : (
+                <LineChart data={series} margin={{ left: 4, right: 8, top: 8, bottom: 0 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="bucket"
+                    tickFormatter={bucketLabel}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                    reversed={isRTL}
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    width={44}
+                    allowDecimals={false}
+                    orientation={isRTL ? "right" : "left"}
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent labelFormatter={(v) => bucketLabel(String(v))} />
+                    }
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={metric}
+                    stroke={`var(--color-${metric})`}
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              )}
+            </ChartContainer>
+          )}
+        </section>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section className="space-y-4 rounded-xl border border-border/70 bg-card p-5 shadow-xs">
+            <h2 className="text-section text-foreground">{t("analytics.orders")}</h2>
+            <div className="space-y-4">
+              {orderBreakdown.map((row) => {
+                const share = breakdownTotal > 0 ? (row.value / breakdownTotal) * 100 : 0;
+                return (
+                  <div key={row.key} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{row.label}</span>
+                      <span className="font-semibold tabular-nums text-foreground">
+                        {formatCount(row.value, currentLanguage)}
+                      </span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={cn("h-full rounded-full", row.barClass)}
+                        style={{ width: `${share}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="space-y-4 rounded-xl border border-border/70 bg-card p-5 shadow-xs">
+            <h2 className="text-section text-foreground">{t("admin.topRestaurants")}</h2>
+            {topRestaurants.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                {t("analytics.noActivityTitle")}
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {topRestaurants.map((r, index) => (
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-3 rounded-xl border border-border/60 p-3"
+                  >
+                    <span className="w-4 shrink-0 text-sm font-semibold text-muted-foreground">
+                      {index + 1}
+                    </span>
+                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-muted">
+                      {r.logoUrl ? (
+                        <img src={r.logoUrl} alt={r.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
+                          {r.name.slice(0, 1).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">{r.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {`${formatCount(r.reservations, currentLanguage)} ${t("analytics.reservations")} · ${r.city}`}
+                      </p>
+                      <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <span>
+                          {r.pickupRate == null
+                            ? t("analytics.notEnoughData")
+                            : `${Math.round(r.pickupRate)}% ${t("analytics.pickupRate")}`}
+                        </span>
+                        <MoneyValue value={r.revenue} size={11} />
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title={t("admin.review")}
+                      aria-label={t("admin.review")}
+                      onClick={() => navigate(`/admin/restaurants?focus=${r.id}`)}
+                    >
+                      <ArrowRight className={cn("h-4 w-4", isRTL && "rotate-180")} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
+
+        <section className="space-y-4 rounded-xl border border-border/70 bg-card p-5 shadow-xs">
+          <h2 className="text-section text-foreground">{t("analytics.impact")}</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-xl border border-border/60 p-4">
+              <p className="text-2xl font-semibold tabular-nums text-foreground">
+                🍽 {formatCount(totals.foodRescued, currentLanguage)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("analytics.portionsRescued")}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 p-4">
+              <p className="text-2xl font-semibold tabular-nums text-foreground">
+                🌱 {formatKg(totals.co2Avoided, currentLanguage)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("analytics.co2Avoided")}
+              </p>
+            </div>
+            <div className="rounded-xl border border-border/60 p-4">
+              <p className="text-2xl font-semibold tabular-nums text-foreground">
+                💰 {formatOmr(totals.customerSavings, currentLanguage)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("analytics.savedByCustomers")}
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t("analytics.co2Note", {
+              value: formatKg(data.co2PerMeal, currentLanguage),
+            })}
+          </p>
+        </section>
       </div>
-    </AdminLayout>
+    </AdminShell>
   );
 };
 

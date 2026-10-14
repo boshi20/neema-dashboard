@@ -1,157 +1,83 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
+import { AppShell } from "@/components/shell/AppShell";
+import { PageHeader } from "@/components/patterns";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-import ImageUpload from "@/components/ImageUpload";
-import LocationPicker from "@/components/LocationPicker";
-import { updateRestaurant, uploadImage } from "@/lib/api";
-
-const DEFAULT_LAT = 23.588;
-const DEFAULT_LNG = 58.3829;
 
 const SettingsPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { currentLanguage, changeLanguage } = useLanguage();
-  const { restaurant, session, refreshRestaurant } = useAuth();
-  const { toast } = useToast();
-
-  const [logo, setLogo] = useState("");
-  const [restaurantName, setRestaurantName] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [cuisineType, setCuisineType] = useState("");
-  const [phone, setPhone] = useState("");
-  const [lat, setLat] = useState(DEFAULT_LAT);
-  const [lng, setLng] = useState(DEFAULT_LNG);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    if (!restaurant) return;
-    setLogo(restaurant.logo_url ?? "");
-    setRestaurantName(restaurant.name);
-    setAddress(restaurant.address);
-    setCity(restaurant.city);
-    setCuisineType(restaurant.cuisine_type);
-    setPhone(restaurant.phone ?? "");
-    setLat(Number(restaurant.lat));
-    setLng(Number(restaurant.lng));
-  }, [restaurant]);
-
-  const handleSave = async () => {
-    if (!restaurant) return;
-    setSaving(true);
-    try {
-      await updateRestaurant(restaurant.id, {
-        name: restaurantName.trim(),
-        address: address.trim(),
-        city: city.trim(),
-        cuisine_type: cuisineType.trim(),
-        phone: phone.trim() || null,
-        lat,
-        lng,
-        logo_url: logo || null,
-      });
-      await refreshRestaurant();
-      toast({ title: t("settings.saved") });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      toast({ title: t("login.error"), description: message, variant: "destructive" });
-    } finally {
-      setSaving(false);
-    }
-  };
+  const { user, logout } = useAuth();
 
   return (
-    <DashboardLayout>
-      <div className="max-w-2xl space-y-6">
-        <h1 className="text-3xl font-bold text-foreground animate-slide-up">{t("settings.title")}</h1>
+    <AppShell title={t("settings.title")}>
+      <div className="mx-auto max-w-xl space-y-8">
+        <PageHeader
+          title={t("settings.title")}
+          description={t("settings.preferences")}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("settings.restaurantLogo")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ImageUpload
-              value={logo}
-              onChange={setLogo}
-              onUpload={session ? (file) => uploadImage(file, session.user.id) : undefined}
-              aspectRatio="square"
-            />
-          </CardContent>
-        </Card>
+        <section className="space-y-4 rounded-xl border border-border/70 bg-card p-5 shadow-xs">
+          <h2 className="text-section text-foreground">{t("settings.account")}</h2>
+          <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
+            <p className="text-xs font-medium text-muted-foreground">
+              {t("settings.email")}
+            </p>
+            <p className="mt-0.5 text-sm font-medium text-foreground" dir="ltr">
+              {user?.email || "—"}
+            </p>
+          </div>
+          <div className="rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
+            <p className="text-xs font-medium text-muted-foreground">
+              {t("common.restaurant")}
+            </p>
+            <p className="mt-0.5 truncate text-sm font-medium text-foreground">
+              {user?.restaurantName || "—"}
+            </p>
+          </div>
+        </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("settings.title")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <Label>{t("settings.restaurantName")}</Label>
-              <Input value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} />
-            </div>
-            <div className="grid gap-2">
-              <Label>{t("settings.address")}</Label>
-              <Input value={address} onChange={(e) => setAddress(e.target.value)} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>{t("settings.city")}</Label>
-                <Input value={city} onChange={(e) => setCity(e.target.value)} />
-              </div>
-              <div className="grid gap-2">
-                <Label>{t("settings.cuisineType")}</Label>
-                <Input value={cuisineType} onChange={(e) => setCuisineType(e.target.value)} />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label>{t("settings.phone")}</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("settings.location")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <LocationPicker lat={lat} lng={lng} onChange={(newLat, newLng) => { setLat(newLat); setLng(newLng); }} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("settings.language")}</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <section className="space-y-4 rounded-xl border border-border/70 bg-card p-5 shadow-xs">
+          <h2 className="text-section text-foreground">{t("settings.language")}</h2>
+          <div className="grid gap-1.5">
+            <Label>{t("settings.language")}</Label>
             <Select value={currentLanguage} onValueChange={changeLanguage}>
-              <SelectTrigger className="w-full sm:w-64"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">🇺🇸 {t("common.english")}</SelectItem>
-                <SelectItem value="ar">🇸🇦 {t("common.arabic")}</SelectItem>
+                <SelectItem value="en">{t("common.english")}</SelectItem>
+                <SelectItem value="ar">{t("common.arabic")}</SelectItem>
               </SelectContent>
             </Select>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
         <Button
-          onClick={() => void handleSave()}
-          disabled={saving || !restaurant || restaurantName.trim().length < 2}
-          className="gradient-primary shadow-glow hover:opacity-90 transition-opacity"
+          variant="outline"
+          className="gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => {
+            logout();
+            navigate("/login");
+          }}
         >
-          {saving ? t("common.loading") : t("common.save")}
+          <LogOut className="h-4 w-4" />
+          {t("settings.signOut")}
         </Button>
       </div>
-    </DashboardLayout>
+    </AppShell>
   );
 };
 

@@ -1,191 +1,198 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AdminLayout from "@/components/AdminLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ShoppingBag } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { PageHeader } from "@/components/patterns/PageHeader";
+import { SearchInput } from "@/components/patterns/SearchInput";
+import { StatusBadge } from "@/components/patterns/StatusBadge";
+import { EmptyState } from "@/components/patterns/EmptyState";
+import { MoneyValue } from "@/components/patterns/MoneyValue";
+import { TableSkeleton } from "@/components/patterns/skeletons";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Search, MoreVertical, CheckCircle, XCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
-import OmrSymbol from "@/components/OmrSymbol";
-import { mockPlatformOrders, type PlatformOrder } from "@/data/adminMockData";
-import { toast } from "@/hooks/use-toast";
+import { listAdminOrders, type AdminOrder, type ReservationStatus } from "@/lib/adminApi";
+import { formatDateTime } from "@/lib/format";
+
+type StatusFilter = "all" | ReservationStatus;
+
+const STATUS_OPTIONS: { value: ReservationStatus; labelKey: string }[] = [
+  { value: "pending_payment", labelKey: "status.pending" },
+  { value: "confirmed", labelKey: "status.confirmed" },
+  { value: "ready_for_pickup", labelKey: "status.readyForPickup" },
+  { value: "picked_up", labelKey: "status.pickedUp" },
+  { value: "cancelled_by_user", labelKey: "status.cancelled" },
+  { value: "expired", labelKey: "status.expired" },
+];
 
 const AdminOrdersPage = () => {
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
+  const { currentLanguage } = useLanguage();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [dialogState, setDialogState] = useState<{ open: boolean; action: string; order: PlatformOrder | null }>({
-    open: false, action: "", order: null,
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  const { data: orders = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: listAdminOrders,
   });
 
-  const handleAction = (action: string, order: PlatformOrder) => {
-    setDialogState({ open: true, action, order });
-  };
-
-  const confirmAction = () => {
-    const { action, order } = dialogState;
-    if (!order) return;
-
-    const actionMessages: Record<string, string> = {
-      cancel: `Order ${order.id} cancelled`,
-      confirm: `Order ${order.id} confirmed`,
-    };
-
-    toast({
-      title: t("common.success"),
-      description: actionMessages[action] || "Action completed",
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return orders.filter((o) => {
+      if (statusFilter !== "all") {
+        // Both cancellation statuses collapse into the "cancelled" filter entry.
+        const matches =
+          statusFilter === "cancelled_by_user"
+            ? o.status === "cancelled_by_user" || o.status === "cancelled_by_restaurant"
+            : o.status === statusFilter;
+        if (!matches) return false;
+      }
+      if (!q) return true;
+      return (
+        o.id.toLowerCase().startsWith(q) ||
+        o.customerName.toLowerCase().includes(q) ||
+        o.restaurantName.toLowerCase().includes(q) ||
+        o.listingTitle.toLowerCase().includes(q) ||
+        (o.listingTitleAr ?? "").toLowerCase().includes(q)
+      );
     });
-    setDialogState({ open: false, action: "", order: null });
-  };
+  }, [orders, search, statusFilter]);
 
-  const statuses = ["all", "pending", "confirmed", "picked_up", "cancelled"];
-
-  const filtered = mockPlatformOrders.filter((o) => {
-    const matchSearch = o.customerName.toLowerCase().includes(search.toLowerCase()) || o.restaurantName.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "all" || o.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
-
-  const statusColors: Record<string, string> = {
-    pending: "bg-chart-5/15 text-chart-5 border-chart-5/20",
-    confirmed: "bg-primary/15 text-primary border-primary/20",
-    picked_up: "bg-chart-2/15 text-chart-2 border-chart-2/20",
-    cancelled: "bg-destructive/15 text-destructive border-destructive/20",
-  };
-
-  const statusLabel = (s: string) => {
-    const map: Record<string, string> = {
-      pending: t("orders.pending"),
-      confirmed: t("orders.confirmed"),
-      picked_up: t("orders.pickedUp"),
-      cancelled: t("orders.cancelled"),
-    };
-    return map[s] || s;
-  };
+  const listingLabel = (o: AdminOrder) =>
+    currentLanguage === "ar" && o.listingTitleAr ? o.listingTitleAr : o.listingTitle;
 
   return (
-    <AdminLayout>
-      <div className="space-y-8">
-        <div className="animate-slide-up">
-          <h1 className="text-3xl font-bold text-foreground">{t("admin.allOrders")}</h1>
-          <p className="text-muted-foreground mt-1">{t("admin.ordersAcrossPlatform")}</p>
-        </div>
+    <AdminShell title={t("admin.orders")}>
+      <div className="space-y-6">
+        <PageHeader title={t("admin.orders")} description={t("admin.ordersSubtitle")} />
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1">
-            <Search className={cn("absolute top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground", isRTL ? "right-3" : "left-3")} />
-            <Input placeholder={t("common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className={cn(isRTL ? "pr-10" : "pl-10")} />
-          </div>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-48"><SelectValue /></SelectTrigger>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <SearchInput
+            containerClassName="w-full sm:max-w-xs"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("admin.searchOrders")}
+          />
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {statuses.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s === "all" ? t("common.all") : statusLabel(s)}
+              <SelectItem value="all">{t("common.all")}</SelectItem>
+              {STATUS_OPTIONS.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {t(s.labelKey)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("orders.orderId")}</TableHead>
-                  <TableHead>{t("admin.restaurantName")}</TableHead>
-                  <TableHead>{t("orders.customer")}</TableHead>
-                  <TableHead>{t("orders.items")}</TableHead>
-                  <TableHead>{t("orders.total")}</TableHead>
-                  <TableHead>{t("orders.status")}</TableHead>
-                  <TableHead>{t("orders.date")}</TableHead>
-                  <TableHead className="w-[80px]">{t("common.actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.length === 0 ? (
+        {isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : isError ? (
+          <EmptyState
+            title={t("admin.loadError")}
+            actionLabel={t("analytics.retry")}
+            onAction={() => refetch()}
+          />
+        ) : filtered.length === 0 ? (
+          <EmptyState icon={ShoppingBag} title={t("admin.noOrdersFound")} />
+        ) : (
+          <>
+            {/* Desktop table */}
+            <div className="hidden overflow-hidden rounded-xl border border-border/70 bg-card shadow-xs md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      {t("common.noResults")}
-                    </TableCell>
+                    <TableHead>{t("admin.order")}</TableHead>
+                    <TableHead>{t("admin.customer")}</TableHead>
+                    <TableHead>{t("admin.restaurant")}</TableHead>
+                    <TableHead>{t("orders.food")}</TableHead>
+                    <TableHead>{t("orders.amount")}</TableHead>
+                    <TableHead>{t("admin.created")}</TableHead>
+                    <TableHead>{t("common.status")}</TableHead>
                   </TableRow>
-                ) : (
-                  filtered.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.id}</TableCell>
-                      <TableCell>{order.restaurantName}</TableCell>
-                      <TableCell>{order.customerName}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{order.items}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center gap-1"><OmrSymbol size={13} /> {order.total}</span>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((o) => (
+                    <TableRow key={o.id}>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        #{o.id.slice(0, 8).toUpperCase()}
                       </TableCell>
                       <TableCell>
-                        <Badge className={cn("border", statusColors[order.status])} variant="secondary">
-                          {statusLabel(order.status)}
-                        </Badge>
+                        <p className="max-w-[160px] truncate text-sm font-medium text-foreground">
+                          {o.customerName}
+                        </p>
+                        <p className="text-xs text-muted-foreground" dir="ltr">
+                          {o.customerPhone}
+                        </p>
                       </TableCell>
-                      <TableCell>{order.date}</TableCell>
+                      <TableCell className="max-w-[160px] truncate text-sm text-muted-foreground">
+                        {o.restaurantName}
+                      </TableCell>
+                      <TableCell className="max-w-[180px] truncate text-sm">
+                        {listingLabel(o)}
+                      </TableCell>
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {order.status === "pending" && (
-                              <DropdownMenuItem onClick={() => handleAction("confirm", order)}>
-                                <CheckCircle className="h-4 w-4 mr-2" /> {t("common.confirm")}
-                              </DropdownMenuItem>
-                            )}
-                            {order.status !== "cancelled" && order.status !== "picked_up" && (
-                              <DropdownMenuItem onClick={() => handleAction("cancel", order)} className="text-destructive">
-                                <XCircle className="h-4 w-4 mr-2" /> {t("common.cancel")}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <MoneyValue value={o.amountPaid} size={12} />
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {formatDateTime(o.createdAt, currentLanguage)}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={o.status} />
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-        <AlertDialog open={dialogState.open} onOpenChange={(open) => setDialogState({ ...dialogState, open })}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t(`common.${dialogState.action}`)}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t("common.confirmAction", { name: dialogState.order?.id || "" })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmAction}>{t("common.confirm")}</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            {/* Mobile cards */}
+            <div className="space-y-3 md:hidden">
+              {filtered.map((o) => (
+                <div
+                  key={o.id}
+                  className="space-y-2 rounded-xl border border-border/70 bg-card p-3.5 shadow-xs"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs text-muted-foreground">
+                      #{o.id.slice(0, 8).toUpperCase()}
+                    </span>
+                    <StatusBadge status={o.status} />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{listingLabel(o)}</p>
+                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                    <span className="truncate">
+                      {o.customerName} · {o.restaurantName}
+                    </span>
+                    <MoneyValue value={o.amountPaid} size={11} className="text-sm" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDateTime(o.createdAt, currentLanguage)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
-    </AdminLayout>
+    </AdminShell>
   );
 };
 

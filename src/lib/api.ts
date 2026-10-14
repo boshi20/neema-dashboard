@@ -8,6 +8,9 @@
 
 import { supabase, type Tables, type Database } from "@/lib/supabase";
 import type { Meal } from "@/types/meal";
+import { MealStockConflictError, nextQuantityRemaining } from "@/lib/mealStock";
+
+export { MealStockConflictError, nextQuantityRemaining } from "@/lib/mealStock";
 
 export type FoodListingRow = Tables<"food_listings">;
 export type ReservationRow = Tables<"reservations">;
@@ -17,6 +20,8 @@ export type ReservationStatus = Database["public"]["Enums"]["reservation_status"
 export interface OwnerOrder {
   id: string;
   customerRef: string;
+  customerName: string;
+  customerPhone: string;
   mealName: string;
   mealNameAr: string;
   total: number;
@@ -136,28 +141,61 @@ export async function createMeal(restaurantId: string, input: MealInput): Promis
   return rowToMeal(data);
 }
 
+/**
+ * Follow-up: move this write into a Postgres RPC that shares reserve_listing's
+ * SELECT ... FOR UPDATE pattern so every quantity_remaining mutation goes
+ * through one locked code path.
+ */
+const UPDATE_MEAL_MAX_ATTEMPTS = 3;
+
 export async function updateMeal(mealId: string, input: MealInput): Promise<Meal> {
   const { start, end } = pickupWindowToIso(input.pickupDate, input.pickupFrom, input.pickupTo);
-  const { data, error } = await supabase
-    .from("food_listings")
-    .update({
-      title: input.name,
-      title_ar: input.nameAr || null,
-      description: input.description || null,
-      description_ar: input.descriptionAr || null,
-      category: input.category,
-      quantity: input.quantity,
-      pickup_start: start,
-      pickup_end: end,
-      original_price: input.originalPrice,
-      selling_price: input.discountedPrice,
-      images: input.image ? [input.image] : [],
-    })
-    .eq("id", mealId)
-    .select("*")
-    .single();
-  if (error) throw error;
-  return rowToMeal(data);
+
+  // Absolute quantity from the merchant form. Read → compute remaining → write
+  // with an optimistic check on (quantity, quantity_remaining). If reserve_listing
+  // (or another editor) changes the row first, zero rows match and we retry with
+  // a fresh snapshot so both operations compose instead of clobbering.
+  for (let attempt = 0; attempt < UPDATE_MEAL_MAX_ATTEMPTS; attempt++) {
+    const { data: existing, error: existingError } = await supabase
+      .from("food_listings")
+      .select("quantity, quantity_remaining")
+      .eq("id", mealId)
+      .single();
+    if (existingError) throw existingError;
+
+    const nextRemaining = nextQuantityRemaining(
+      existing.quantity,
+      existing.quantity_remaining,
+      input.quantity
+    );
+
+    const { data, error } = await supabase
+      .from("food_listings")
+      .update({
+        title: input.name,
+        title_ar: input.nameAr || null,
+        description: input.description || null,
+        description_ar: input.descriptionAr || null,
+        category: input.category,
+        quantity: input.quantity,
+        quantity_remaining: nextRemaining,
+        pickup_start: start,
+        pickup_end: end,
+        original_price: input.originalPrice,
+        selling_price: input.discountedPrice,
+        images: input.image ? [input.image] : [],
+      })
+      .eq("id", mealId)
+      .eq("quantity", existing.quantity)
+      .eq("quantity_remaining", existing.quantity_remaining)
+      .select("*")
+      .maybeSingle();
+
+    if (error) throw error;
+    if (data) return rowToMeal(data);
+  }
+
+  throw new MealStockConflictError();
 }
 
 export async function setMealAvailability(mealId: string, available: boolean): Promise<void> {
@@ -188,16 +226,23 @@ export async function deleteMeal(mealId: string): Promise<void> {
 export async function listOrders(restaurantId: string): Promise<OwnerOrder[]> {
   const { data, error } = await supabase
     .from("reservations")
-    .select("*, food_listings!inner(*)")
+    .select("*, food_listings!inner(*), users(full_name, phone)")
     .eq("food_listings.restaurant_id", restaurantId)
     .order("created_at", { ascending: false });
   if (error) throw error;
 
   return (data ?? []).map((row) => {
     const listing = (row as unknown as { food_listings: FoodListingRow }).food_listings;
+    const customer = (
+      row as unknown as {
+        users: { full_name: string | null; phone: string | null } | null;
+      }
+    ).users;
     return {
       id: row.id,
       customerRef: row.user_id.slice(0, 8).toUpperCase(),
+      customerName: customer?.full_name?.trim() || "—",
+      customerPhone: customer?.phone?.trim() || "—",
       mealName: listing?.title ?? "",
       mealNameAr: listing?.title_ar ?? "",
       total: Number(row.amount_paid),
@@ -217,6 +262,18 @@ export async function updateOrderStatus(
     payload.picked_up_at = new Date().toISOString();
   }
   const { error } = await supabase.from("reservations").update(payload).eq("id", orderId);
+  if (error) throw error;
+}
+
+/** Marks pickup after verifying the customer's 4-digit code (updates impact stats). */
+export async function completePickupWithCode(
+  orderId: string,
+  pickupCode: string
+): Promise<void> {
+  const { error } = await supabase.rpc("complete_pickup", {
+    p_reservation_id: orderId,
+    p_pickup_code: pickupCode.trim(),
+  });
   if (error) throw error;
 }
 

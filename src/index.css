@@ -1,13 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 150 20% 95%;
+    --background: 150 20% 96%;
     --foreground: 160 10% 10%;
 
     --card: 0 0% 100%;
@@ -23,28 +20,28 @@
     --secondary: 160 8% 46%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 150 8% 65%;
-    --muted-foreground: 160 6% 40%;
+    --muted: 150 12% 94%;
+    --muted-foreground: 160 6% 42%;
 
     --accent: 166 76% 96%;
-    --accent-foreground: 173 80% 40%;
+    --accent-foreground: 173 80% 32%;
 
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 85% 97%;
 
-    --border: 150 10% 88%;
-    --input: 150 10% 88%;
+    --border: 150 10% 90%;
+    --input: 150 10% 90%;
     --ring: 161 93% 30%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 160 10% 10%;
     --sidebar-primary: 161 93% 30%;
     --sidebar-primary-foreground: 151 80% 95%;
     --sidebar-accent: 166 76% 96%;
-    --sidebar-accent-foreground: 173 80% 40%;
-    --sidebar-border: 150 10% 90%;
+    --sidebar-accent-foreground: 173 80% 32%;
+    --sidebar-border: 150 10% 92%;
     --sidebar-ring: 161 93% 30%;
 
     --chart-1: 158 64% 51%;
@@ -55,28 +52,29 @@
 
     --sidebar: 0 0% 100%;
 
-    --font-sans: 'Work Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-    --font-serif: 'Lora', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
-    --font-mono: 'Inconsolata', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
-    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-    --shadow-sm: 0 1px 2px 0px hsl(0 0% 0% / 0.04), 0 1px 4px -1px hsl(0 0% 0% / 0.06);
-    --shadow: 0 2px 8px -2px hsl(0 0% 0% / 0.08), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
-    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.08), 0 2px 4px -2px hsl(0 0% 0% / 0.04);
-    --shadow-lg: 0 8px 24px -4px hsl(0 0% 0% / 0.1), 0 4px 8px -2px hsl(0 0% 0% / 0.04);
-    --shadow-xl: 0 16px 40px -8px hsl(0 0% 0% / 0.12), 0 8px 16px -4px hsl(0 0% 0% / 0.06);
-    --shadow-2xl: 0 24px 60px -12px hsl(0 0% 0% / 0.2);
+    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.04);
+    --shadow-xs: 0 1px 2px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 2px 0px hsl(0 0% 0% / 0.04), 0 1px 3px -1px hsl(0 0% 0% / 0.06);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(0 0% 0% / 0.06), 0 2px 4px -2px hsl(0 0% 0% / 0.04);
+    --shadow-lg: 0 8px 24px -4px hsl(0 0% 0% / 0.08), 0 4px 8px -2px hsl(0 0% 0% / 0.04);
+    --shadow-xl: 0 16px 40px -8px hsl(0 0% 0% / 0.1), 0 8px 16px -4px hsl(0 0% 0% / 0.05);
+    --shadow-2xl: 0 24px 60px -12px hsl(0 0% 0% / 0.16);
 
-    --shadow-glass: 0 8px 32px 0 hsl(161 93% 30% / 0.06);
-    --shadow-glow: 0 0 20px hsl(161 93% 30% / 0.15);
+    --shadow-glow: 0 0 20px hsl(161 93% 30% / 0.12);
 
     --gradient-primary: linear-gradient(135deg, hsl(161 93% 30%), hsl(158 64% 51%));
-    --gradient-bg: linear-gradient(135deg, hsl(150 20% 95%), hsl(166 30% 94%), hsl(150 20% 95%));
-    --gradient-sidebar: linear-gradient(180deg, hsl(0 0% 100%), hsl(150 15% 97%));
+    --gradient-bg: linear-gradient(180deg, hsl(150 20% 97%), hsl(150 18% 95%));
 
     --tracking-normal: 0em;
     --spacing: 0.25rem;
+  }
+
+  html[lang="ar"] {
+    --font-sans: 'Cairo', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   }
 
   .dark {
@@ -96,7 +94,7 @@
     --secondary: 160 8% 40%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 160 6% 30%;
+    --muted: 160 6% 18%;
     --muted-foreground: 150 8% 65%;
 
     --accent: 165 30% 15%;
@@ -125,12 +123,10 @@
     --chart-5: 0 0% 45%;
     --sidebar: 160 12% 10%;
 
-    --shadow-glass: 0 8px 32px 0 hsl(0 0% 0% / 0.3);
     --shadow-glow: 0 0 20px hsl(158 64% 51% / 0.2);
 
     --gradient-primary: linear-gradient(135deg, hsl(158 64% 51%), hsl(161 93% 30%));
-    --gradient-bg: linear-gradient(135deg, hsl(160 15% 8%), hsl(165 20% 10%), hsl(160 15% 8%));
-    --gradient-sidebar: linear-gradient(180deg, hsl(160 12% 12%), hsl(160 15% 8%));
+    --gradient-bg: linear-gradient(180deg, hsl(160 15% 8%), hsl(165 20% 10%));
 
     --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.1);
     --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.1);
@@ -148,7 +144,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
     background-image: var(--gradient-bg);
     background-attachment: fixed;
     min-height: 100vh;
@@ -157,18 +153,7 @@
 
 @layer utilities {
   .glass {
-    @apply bg-card/70 backdrop-blur-xl border border-border/50;
-    box-shadow: var(--shadow-glass);
-  }
-
-  .glass-subtle {
-    @apply bg-card/50 backdrop-blur-lg border border-border/30;
-  }
-
-  .glass-sidebar {
-    background-image: var(--gradient-sidebar);
-    @apply backdrop-blur-xl border-border/50;
-    box-shadow: var(--shadow-glass);
+    @apply bg-card/90 backdrop-blur-md border border-border/50;
   }
 
   .gradient-primary {
@@ -180,15 +165,19 @@
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
+    animation: fadeIn 0.35s ease-out;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.4s ease-out;
+    animation: slideUp 0.35s ease-out;
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.3s ease-out;
+    animation: scaleIn 0.25s ease-out;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -198,11 +187,11 @@
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }

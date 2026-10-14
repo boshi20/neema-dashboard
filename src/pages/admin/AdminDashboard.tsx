@@ -1,142 +1,225 @@
 import { useTranslation } from "react-i18next";
-import AdminLayout from "@/components/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Store, ShoppingBag, Users, TrendingUp, ArrowRight, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ArrowRight,
+  CheckCircle2,
+  ClipboardCheck,
+  Store,
+  UserPlus,
+  Users,
+  UtensilsCrossed,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { KpiCard } from "@/components/patterns/KpiCard";
+import { SectionHeader } from "@/components/patterns/PageHeader";
+import { EmptyState } from "@/components/patterns/EmptyState";
+import { KpiSkeleton, ListSkeleton } from "@/components/patterns/skeletons";
+import { Button } from "@/components/ui/button";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { fetchAdminOverview, type AdminActivityType } from "@/lib/adminApi";
+import { formatCount } from "@/lib/analytics";
+import { formatRelativeTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import OmrSymbol from "@/components/OmrSymbol";
-import { mockRestaurants, mockPlatformOrders } from "@/data/adminMockData";
+
+const ACTIVITY_ICON: Record<AdminActivityType, LucideIcon> = {
+  restaurant_submitted: Store,
+  user_joined: UserPlus,
+  listing_created: UtensilsCrossed,
+  reservation_completed: CheckCircle2,
+};
+
+const ACTIVITY_LABEL_KEY: Record<AdminActivityType, string> = {
+  restaurant_submitted: "admin.activityRestaurantSubmitted",
+  user_joined: "admin.activityUserJoined",
+  listing_created: "admin.activityListingCreated",
+  reservation_completed: "admin.activityReservationCompleted",
+};
 
 const AdminDashboard = () => {
   const { t } = useTranslation();
-  const { isRTL } = useLanguage();
+  const { currentLanguage, isRTL } = useLanguage();
   const navigate = useNavigate();
+  const { admin } = useAdminAuth();
 
-  const totalRestaurants = mockRestaurants.length;
-  const activeRestaurants = mockRestaurants.filter((r) => r.status === "active").length;
-  const totalOrders = mockPlatformOrders.length;
-  const totalRevenue = mockRestaurants.reduce((s, r) => s + r.revenue, 0);
-  const totalUsers = 2314; // Total platform users
-  const newUsersToday = 18; // New users registered today
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: fetchAdminOverview,
+  });
 
-  const stats = [
-    { title: t("admin.totalUsers"), value: totalUsers.toLocaleString(), icon: Users, bgClass: "bg-chart-4/10", iconClass: "text-chart-4" },
-    { title: t("admin.platformRevenue"), value: totalRevenue.toLocaleString(), icon: TrendingUp, bgClass: "bg-chart-1/10", iconClass: "text-chart-1", showOmr: true },
-    { title: t("admin.newUsersToday"), value: newUsersToday, icon: Users, bgClass: "bg-chart-2/10", iconClass: "text-chart-2" },
-    { title: t("admin.totalRestaurants"), value: totalRestaurants, icon: Store, bgClass: "bg-primary/10", iconClass: "text-primary" },
-  ];
-
-  const statusColors: Record<string, string> = {
-    pending: "bg-chart-5/15 text-chart-5 border-chart-5/20",
-    confirmed: "bg-primary/15 text-primary border-primary/20",
-    picked_up: "bg-chart-2/15 text-chart-2 border-chart-2/20",
-    cancelled: "bg-destructive/15 text-destructive border-destructive/20",
-  };
-
-  const restaurantStatusColors: Record<string, string> = {
-    active: "bg-primary/15 text-primary border-primary/20",
-    pending: "bg-chart-5/15 text-chart-5 border-chart-5/20",
-    suspended: "bg-destructive/15 text-destructive border-destructive/20",
-  };
+  const totals = data?.totals;
 
   return (
-    <AdminLayout>
+    <AdminShell title={t("admin.overview")}>
       <div className="space-y-8">
-        <div className="animate-slide-up">
-          <h1 className="text-3xl font-bold text-foreground">{t("admin.welcomeAdmin")} 🛡️</h1>
-          <p className="text-muted-foreground mt-1">{t("admin.platformOverview")}</p>
+        <div>
+          <h2 className="text-page-title text-foreground">
+            {t("admin.welcomeBack", { name: admin?.name || "Admin" })}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t("admin.overviewSubtitle")}</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, i) => (
-            <Card key={stat.title} className="animate-slide-up" style={{ animationDelay: `${i * 80}ms`, animationFillMode: "both" }}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">{stat.title}</p>
-                    <p className="text-3xl font-bold text-foreground flex items-baseline gap-1.5">
-                      {"showOmr" in stat && stat.showOmr && <OmrSymbol size={20} />}
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={cn("rounded-xl p-3", stat.bgClass)}>
-                    <stat.icon className={cn("h-6 w-6", stat.iconClass)} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* System Status */}
-          <Card className="animate-slide-up" style={{ animationDelay: "320ms", animationFillMode: "both" }}>
-            <CardHeader>
-              <CardTitle>{t("admin.systemStatus")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between rounded-xl glass-subtle p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full bg-chart-2 animate-pulse"></div>
-                    <span className="text-sm font-medium text-foreground">{t("admin.apiStatus")}</span>
-                  </div>
-                  <span className="text-xs text-chart-2">{t("admin.operational")}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-xl glass-subtle p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 rounded-full bg-chart-2 animate-pulse"></div>
-                    <span className="text-sm font-medium text-foreground">{t("admin.databaseStatus")}</span>
-                  </div>
-                  <span className="text-xs text-chart-2">{t("admin.operational")}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-xl glass-subtle p-3">
-                  <div className="flex items-center gap-3">
-                    <AlertTriangle className="h-4 w-4 text-chart-5" />
-                    <span className="text-sm font-medium text-foreground">{t("admin.pendingReviews")}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">3 {t("admin.items")}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Activity */}
-          <Card className="animate-slide-up" style={{ animationDelay: "400ms", animationFillMode: "both" }}>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{t("admin.recentActivity")}</CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/admin/orders")} className="text-primary">
-                <ArrowRight className={cn("h-4 w-4", isRTL && "rotate-180")} />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {mockPlatformOrders.slice(0, 4).map((order, i) => (
-                  <div key={order.id} className="flex items-center gap-3 rounded-xl glass-subtle p-3 transition-all duration-200 hover:bg-accent/40">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">{order.customerName}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("admin.ordered")} {order.items} · {order.restaurantName}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-foreground inline-flex items-center gap-1">
-                        <OmrSymbol size={13} /> {order.total}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{order.date}</p>
-                    </div>
-                  </div>
+        {isError ? (
+          <EmptyState
+            title={t("admin.loadError")}
+            actionLabel={t("analytics.retry")}
+            onAction={() => refetch()}
+          />
+        ) : (
+          <>
+            {isLoading || !totals ? (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <KpiSkeleton key={i} />
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <KpiCard
+                  label={t("admin.totalRestaurants")}
+                  value={formatCount(totals.totalRestaurants, currentLanguage)}
+                  icon={Store}
+                  noPreviousLabel={t("admin.pendingCount", {
+                    count: totals.pendingRestaurants,
+                  })}
+                />
+                <KpiCard
+                  label={t("admin.pendingApprovals")}
+                  value={formatCount(totals.pendingRestaurants, currentLanguage)}
+                  icon={ClipboardCheck}
+                  iconClassName={totals.pendingRestaurants > 0 ? "text-amber-600" : "text-primary"}
+                  iconBgClassName={totals.pendingRestaurants > 0 ? "bg-amber-50" : "bg-primary/10"}
+                  noPreviousLabel={t("admin.awaitingReview")}
+                />
+                <KpiCard
+                  label={t("admin.totalUsers")}
+                  value={formatCount(totals.totalUsers, currentLanguage)}
+                  icon={Users}
+                  noPreviousLabel={t("admin.usersBreakdown", {
+                    customers: totals.customers,
+                    owners: totals.restaurantOwners,
+                  })}
+                />
+                <KpiCard
+                  label={t("admin.activeListings")}
+                  value={formatCount(totals.activeListings, currentLanguage)}
+                  icon={UtensilsCrossed}
+                  noPreviousLabel={t("admin.reservationsToday", {
+                    count: totals.reservationsToday,
+                  })}
+                />
+              </div>
+            )}
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <section className="space-y-4">
+                <SectionHeader
+                  title={t("admin.pendingActions")}
+                  action={
+                    (data?.pendingApprovals.length ?? 0) > 0 ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1 text-primary"
+                        onClick={() => navigate("/admin/restaurants?status=pending_review")}
+                      >
+                        {t("common.viewAll")}
+                        <ArrowRight className={cn("h-4 w-4", isRTL && "rotate-180")} />
+                      </Button>
+                    ) : undefined
+                  }
+                />
+                {isLoading ? (
+                  <ListSkeleton rows={3} />
+                ) : (data?.pendingApprovals.length ?? 0) === 0 ? (
+                  <EmptyState
+                    icon={ClipboardCheck}
+                    title={t("admin.noPendingActions")}
+                    className="py-10"
+                  />
+                ) : (
+                  <div className="divide-y divide-border/60 rounded-xl border border-border/70 bg-card shadow-xs">
+                    {data!.pendingApprovals.map((p) => (
+                      <div key={p.id} className="flex items-center gap-3 p-3.5">
+                        {p.logoUrl ? (
+                          <img
+                            src={p.logoUrl}
+                            alt=""
+                            className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">
+                            {p.name.slice(0, 1).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-foreground">{p.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {p.city} · {p.cuisineType} ·{" "}
+                            {formatRelativeTime(p.submittedAt, currentLanguage)}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            navigate(`/admin/restaurants?status=pending_review&focus=${p.id}`)
+                          }
+                        >
+                          {t("admin.review")}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="space-y-4">
+                <SectionHeader title={t("admin.recentActivity")} />
+                {isLoading ? (
+                  <ListSkeleton rows={5} />
+                ) : (data?.recentActivity.length ?? 0) === 0 ? (
+                  <EmptyState title={t("admin.noActivity")} className="py-10" />
+                ) : (
+                  <div className="divide-y divide-border/60 rounded-xl border border-border/70 bg-card shadow-xs">
+                    {data!.recentActivity.map((a, i) => {
+                      const Icon = ACTIVITY_ICON[a.type] ?? Store;
+                      const subtitle =
+                        a.type === "user_joined"
+                          ? t(`admin.roles.${a.subtitle}`, { defaultValue: a.subtitle })
+                          : a.subtitle;
+                      return (
+                        <div key={`${a.type}-${a.entityId}-${i}`} className="flex items-center gap-3 p-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
+                            <Icon className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {a.title}
+                              {subtitle ? (
+                                <span className="text-muted-foreground"> · {subtitle}</span>
+                              ) : null}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {t(ACTIVITY_LABEL_KEY[a.type] ?? "admin.recentActivity")}
+                            </p>
+                          </div>
+                          <span className="shrink-0 text-xs text-muted-foreground">
+                            {formatRelativeTime(a.ts, currentLanguage)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            </div>
+          </>
+        )}
       </div>
-    </AdminLayout>
+    </AdminShell>
   );
 };
 

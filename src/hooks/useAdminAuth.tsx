@@ -1,48 +1,58 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+/**
+ * Admin auth derived from the real Supabase session.
+ *
+ * Frontend gating is convenience only — actual enforcement lives in the
+ * database: admin RLS policies and RPCs all validate `is_admin()` server-side,
+ * so a non-admin session cannot read or mutate admin data regardless of what
+ * the client renders.
+ */
 
-interface AdminUser {
-  id: string;
-  email: string;
-  name: string;
-  role: "admin";
+import { useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "./useAuth";
+
+export class NotAdminError extends Error {
+  constructor() {
+    super("NOT_ADMIN");
+    this.name = "NotAdminError";
+  }
 }
 
-interface AdminAuthContextType {
-  admin: AdminUser | null;
-  isAdminAuthenticated: boolean;
-  adminLogin: (user: AdminUser) => void;
-  adminLogout: () => void;
-}
+export function useAdminAuth() {
+  const { session, profile, isAdmin, loading, syncing, logout } = useAuth();
 
-const AdminAuthContext = createContext<AdminAuthContextType>({
-  admin: null,
-  isAdminAuthenticated: false,
-  adminLogin: () => {},
-  adminLogout: () => {},
-});
+  /**
+   * Signs in and verifies the account is an admin. Non-admin accounts are
+   * signed out again and rejected so the admin login page can show a clear
+   * access-denied message.
+   */
+  const adminSignIn = useCallback(async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
 
-export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
-  const [admin, setAdmin] = useState<AdminUser | null>(() => {
-    const saved = localStorage.getItem("saveplate_admin");
-    return saved ? JSON.parse(saved) : null;
-  });
+    const userId = data.session?.user.id;
+    const { data: row, error: roleError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", userId ?? "")
+      .maybeSingle();
 
-  useEffect(() => {
-    if (admin) {
-      localStorage.setItem("saveplate_admin", JSON.stringify(admin));
-    } else {
-      localStorage.removeItem("saveplate_admin");
+    if (roleError || row?.role !== "admin") {
+      await supabase.auth.signOut();
+      throw new NotAdminError();
     }
-  }, [admin]);
+  }, []);
 
-  const adminLogin = (userData: AdminUser) => setAdmin(userData);
-  const adminLogout = () => setAdmin(null);
-
-  return (
-    <AdminAuthContext.Provider value={{ admin, isAdminAuthenticated: !!admin, adminLogin, adminLogout }}>
-      {children}
-    </AdminAuthContext.Provider>
-  );
-};
-
-export const useAdminAuth = () => useContext(AdminAuthContext);
+  return {
+    admin:
+      isAdmin && profile
+        ? { id: profile.id, email: profile.email, name: profile.full_name }
+        : null,
+    isAdminAuthenticated: Boolean(session) && isAdmin,
+    isAuthenticated: Boolean(session),
+    /** True while we cannot yet tell whether the session belongs to an admin. */
+    loading: loading || (Boolean(session) && syncing),
+    adminSignIn,
+    adminSignOut: logout,
+  };
+}

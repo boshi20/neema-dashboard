@@ -250,6 +250,46 @@ export type Database = {
           }
         ];
       };
+      admin_audit_logs: {
+        Row: {
+          id: string;
+          admin_id: string;
+          action: string;
+          entity_type: string;
+          entity_id: string | null;
+          entity_label: string | null;
+          details: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          admin_id: string;
+          action: string;
+          entity_type: string;
+          entity_id?: string | null;
+          entity_label?: string | null;
+          details?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          admin_id?: string;
+          action?: string;
+          entity_type?: string;
+          entity_id?: string | null;
+          entity_label?: string | null;
+          details?: Json;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'admin_audit_logs_admin_id_fkey';
+            columns: ['admin_id'];
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
       impact_stats: {
         Row: {
           user_id: string;
@@ -291,6 +331,63 @@ export type Database = {
           p_listing_id: string;
         };
         Returns: Database['public']['Tables']['reservations']['Row'];
+      };
+      complete_pickup: {
+        Args: {
+          p_reservation_id: string;
+          p_pickup_code: string;
+        };
+        Returns: Database['public']['Tables']['reservations']['Row'];
+      };
+      nema_co2_kg_per_meal: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      restaurant_analytics: {
+        Args: {
+          p_from: string;
+          p_to: string;
+          p_time_zone?: string;
+        };
+        Returns: Json;
+      };
+      is_admin: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      admin_set_restaurant_status: {
+        Args: {
+          p_restaurant_id: string;
+          p_status: Database['public']['Enums']['restaurant_status'];
+          p_reason?: string | null;
+        };
+        Returns: Database['public']['Tables']['restaurants']['Row'];
+      };
+      admin_set_listing_status: {
+        Args: {
+          p_listing_id: string;
+          p_status: Database['public']['Enums']['listing_status'];
+        };
+        Returns: Database['public']['Tables']['food_listings']['Row'];
+      };
+      admin_set_user_role: {
+        Args: {
+          p_user_id: string;
+          p_role: Database['public']['Enums']['user_role'];
+        };
+        Returns: Database['public']['Tables']['users']['Row'];
+      };
+      admin_overview: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      admin_platform_analytics: {
+        Args: {
+          p_from: string;
+          p_to: string;
+          p_time_zone?: string;
+        };
+        Returns: Json;
       };
     };
     Enums: {

@@ -1,10 +1,13 @@
 /**
- * Restaurant-owner auth backed by Supabase.
+ * Supabase auth shared by the restaurant dashboard and the admin dashboard.
  *
  * Session is restored on boot and kept in sync via onAuthStateChange.
- * On first sign-in the owner's `users` profile row (role restaurant_owner)
- * and `restaurants` row are created if missing, so both email-confirmation
- * and instant-session signup flows converge here.
+ * On first sign-in the `users` profile row and (for non-admins) the
+ * `restaurants` row are created if missing, so both email-confirmation and
+ * instant-session signup flows converge here.
+ *
+ * Admin accounts (users.role = 'admin') never get an auto-created restaurant;
+ * they are routed to /admin instead.
  */
 
 import {
@@ -19,6 +22,7 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase, type Tables } from "@/lib/supabase";
 
 export type RestaurantRow = Tables<"restaurants">;
+export type UserProfileRow = Tables<"users">;
 
 interface DisplayUser {
   id: string;
@@ -29,10 +33,14 @@ interface DisplayUser {
 
 interface AuthContextType {
   user: DisplayUser | null;
+  profile: UserProfileRow | null;
+  isAdmin: boolean;
   restaurant: RestaurantRow | null;
   session: Session | null;
   isAuthenticated: boolean;
   loading: boolean;
+  /** True while the profile/restaurant rows for the current session are being loaded. */
+  syncing: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, restaurantName: string) => Promise<{ needsConfirmation: boolean }>;
   logout: () => void;
@@ -42,10 +50,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  profile: null,
+  isAdmin: false,
   restaurant: null,
   session: null,
   isAuthenticated: false,
   loading: true,
+  syncing: false,
   signIn: async () => {},
   signUp: async () => ({ needsConfirmation: false }),
   logout: () => {},
@@ -56,7 +67,12 @@ const AuthContext = createContext<AuthContextType>({
 const DEFAULT_LAT = 23.588;
 const DEFAULT_LNG = 58.3829;
 
-async function ensureOwnerSetup(session: Session): Promise<RestaurantRow | null> {
+interface AccountData {
+  profile: UserProfileRow | null;
+  restaurant: RestaurantRow | null;
+}
+
+async function loadAccount(session: Session): Promise<AccountData> {
   const authUser = session.user;
   const metadataName =
     typeof authUser.user_metadata?.restaurant_name === "string"
@@ -64,12 +80,14 @@ async function ensureOwnerSetup(session: Session): Promise<RestaurantRow | null>
       : "";
   const restaurantName = metadataName.length >= 2 ? metadataName : "My Restaurant";
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: initialProfile, error: profileError } = await supabase
     .from("users")
     .select("*")
     .eq("id", authUser.id)
     .maybeSingle();
   if (profileError) throw profileError;
+
+  let profile = initialProfile;
 
   if (!profile) {
     const { error: insertError } = await supabase.from("users").insert({
@@ -80,6 +98,19 @@ async function ensureOwnerSetup(session: Session): Promise<RestaurantRow | null>
       language: "en",
     });
     if (insertError && insertError.code !== "23505") throw insertError;
+
+    const refetch = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", authUser.id)
+      .maybeSingle();
+    if (refetch.error) throw refetch.error;
+    profile = refetch.data;
+  }
+
+  // Admins operate the platform, not a restaurant — never auto-create one.
+  if (profile?.role === "admin") {
+    return { profile, restaurant: null };
   }
 
   const { data: restaurant, error: restaurantError } = await supabase
@@ -88,7 +119,7 @@ async function ensureOwnerSetup(session: Session): Promise<RestaurantRow | null>
     .eq("owner_id", authUser.id)
     .maybeSingle();
   if (restaurantError) throw restaurantError;
-  if (restaurant) return restaurant;
+  if (restaurant) return { profile, restaurant };
 
   // TEMPORARY: insert as approved because there is no admin approval flow yet
   // and the mobile app only surfaces approved restaurants.
@@ -109,26 +140,35 @@ async function ensureOwnerSetup(session: Session): Promise<RestaurantRow | null>
     .select("*")
     .single();
   if (createError) throw createError;
-  return created;
+  return { profile, restaurant: created };
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfileRow | null>(null);
   const [restaurant, setRestaurant] = useState<RestaurantRow | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
-  const syncOwner = useCallback(async (nextSession: Session | null) => {
+  const syncAccount = useCallback(async (nextSession: Session | null) => {
     setSession(nextSession);
     if (!nextSession) {
+      setProfile(null);
       setRestaurant(null);
       return;
     }
+    setSyncing(true);
     try {
-      const row = await ensureOwnerSetup(nextSession);
-      setRestaurant(row);
+      const { profile: profileRow, restaurant: restaurantRow } =
+        await loadAccount(nextSession);
+      setProfile(profileRow);
+      setRestaurant(restaurantRow);
     } catch (error) {
-      console.error("Failed to load owner data", error);
+      console.error("Failed to load account data", error);
+      setProfile(null);
       setRestaurant(null);
+    } finally {
+      setSyncing(false);
     }
   }, []);
 
@@ -139,7 +179,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .getSession()
       .then(async ({ data }) => {
         if (!mounted) return;
-        await syncOwner(data.session);
+        await syncAccount(data.session);
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -148,14 +188,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      void syncOwner(nextSession);
+      void syncAccount(nextSession);
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [syncOwner]);
+  }, [syncAccount]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -202,10 +242,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
+        profile,
+        isAdmin: profile?.role === "admin",
         restaurant,
         session,
         isAuthenticated: Boolean(session),
         loading,
+        syncing,
         signIn,
         signUp,
         logout,
